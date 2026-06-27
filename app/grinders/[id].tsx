@@ -28,12 +28,15 @@ const GRINDER_TYPES = [
 
 type GrinderType = (typeof GRINDER_TYPES)[number]['id'];
 
+const UNIT_PRESETS = ['clicks', 'number', 'μm', 'steps'];
+
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   type: z.enum(['burr', 'blade', 'hand']).optional(),
   minSetting: z.number().optional(),
   maxSetting: z.number().optional(),
   stepSize: z.number().optional(),
+  settingUnit: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -53,10 +56,11 @@ export default function EditGrinderScreen() {
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', notes: '' },
+    defaultValues: { name: '', settingUnit: '', notes: '' },
   });
 
   const selectedType = watch('type');
+  const settingUnitValue = watch('settingUnit');
 
   useEffect(() => {
     if (item && !initialized.current) {
@@ -67,6 +71,7 @@ export default function EditGrinderScreen() {
         minSetting: item.minSetting ?? undefined,
         maxSetting: item.maxSetting ?? undefined,
         stepSize: item.stepSize ?? undefined,
+        settingUnit: item.settingUnit ?? '',
         notes: item.notes ?? '',
       });
     }
@@ -81,6 +86,7 @@ export default function EditGrinderScreen() {
         minSetting: values.minSetting ?? undefined,
         maxSetting: values.maxSetting ?? undefined,
         stepSize: values.stepSize ?? undefined,
+        settingUnit: values.settingUnit?.trim() || undefined,
         notes: values.notes?.trim() || undefined,
       }).where(eq(grinders.id, grinderId));
       router.back();
@@ -168,6 +174,24 @@ export default function EditGrinderScreen() {
                 placeholder="1" placeholderTextColor={Colors.textTertiary} />
             )} />
           </View>
+        </View>
+        <View>
+          <Text style={styles.fieldLabel}>Unit</Text>
+          <View style={styles.chipRow}>
+            {UNIT_PRESETS.map((u) => (
+              <Pressable key={u} onPress={() => setValue('settingUnit', u)}
+                style={[styles.chip, settingUnitValue === u && styles.chipActive]}>
+                <Text style={[styles.chipText, settingUnitValue === u && styles.chipTextActive]}>{u}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Controller control={control} name="settingUnit" render={({ field }) => (
+            <TextInput style={[styles.input, { marginTop: 6 }]}
+              value={field.value ?? ''}
+              onChangeText={field.onChange}
+              placeholder="or type your own…"
+              placeholderTextColor={Colors.textTertiary} />
+          )} />
         </View>
       </View>
 
