@@ -14,8 +14,10 @@ import {
 } from 'react-native';
 import * as z from 'zod';
 
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+
 import { db } from '@/db/client';
-import { brews } from '@/db/schema';
+import { beans, brews } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { ParamInput } from '@/components/ParamInput';
 
@@ -57,6 +59,9 @@ export default function NewBrewScreen() {
   const [method, setMethod] = useState<BrewMethod>('aeropress');
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState('');
+  const [selectedBeanId, setSelectedBeanId] = useState<number | null>(null);
+
+  const { data: beanList } = useLiveQuery(db.select().from(beans).orderBy(beans.name));
 
   const params = METHODS[method].params;
 
@@ -96,6 +101,7 @@ export default function NewBrewScreen() {
 
       await db.insert(brews).values({
         method,
+        beanId: selectedBeanId ?? undefined,
         doseG: doseG,
         waterG: waterG,
         ratio: ratio,
@@ -139,6 +145,36 @@ export default function NewBrewScreen() {
             </Pressable>
           ))}
         </View>
+      </View>
+
+      {/* Bean */}
+      <Text style={styles.sectionTitle}>Bean</Text>
+      <View style={styles.card}>
+        {beanList && beanList.length > 0 ? (
+          <View style={styles.chipRow}>
+            <Pressable
+              onPress={() => setSelectedBeanId(null)}
+              style={[styles.chip, selectedBeanId === null && styles.chipActive]}
+            >
+              <Text style={[styles.chipText, selectedBeanId === null && styles.chipTextActive]}>
+                None
+              </Text>
+            </Pressable>
+            {beanList.map((b) => (
+              <Pressable
+                key={b.id}
+                onPress={() => setSelectedBeanId(b.id)}
+                style={[styles.chip, selectedBeanId === b.id && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, selectedBeanId === b.id && styles.chipTextActive]}>
+                  {b.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.muted}>No beans yet — add some in the Beans tab.</Text>
+        )}
       </View>
 
       {/* Parameters */}
@@ -216,6 +252,7 @@ const styles = StyleSheet.create({
   chipText: { color: '#5a4636', fontWeight: '600', fontSize: 13 },
   chipTextActive: { color: '#fff' },
   paramSep: { borderTopWidth: 1, borderTopColor: '#f0e8de', paddingTop: 14 },
+  muted: { color: '#8a7a6c', fontSize: 14 },
   notesInput: {
     minHeight: 80,
     fontSize: 15,
