@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import {
   ActivityIndicator,
   Alert,
@@ -44,13 +44,13 @@ export default function NewGrinderScreen() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
-  const { control, handleSubmit, setValue, watch, getValues, formState: { errors } } = useForm<FormValues>({
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: '', settingUnit: '', notes: '' },
   });
 
-  const selectedType = watch('type');
-  const settingUnitValue = watch('settingUnit');
+  const selectedType = useWatch({ control, name: 'type' });
+  const settingUnitValue = useWatch({ control, name: 'settingUnit' });
 
   const onSave = handleSubmit(async (values: FormValues) => {
     setSaving(true);

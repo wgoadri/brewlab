@@ -1,5 +1,5 @@
 import Slider from '@react-native-community/slider';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -144,10 +144,11 @@ function SliderInput({ spec, value, onChange, error }: ParamInputProps) {
         : (spec.min ?? 0);
 
   const [sliderVal, setSliderVal] = useState<number>(initial);
-
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState<typeof value>(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
     if (typeof value === 'number') setSliderVal(value);
-  }, [value]);
+  }
 
   const formatted =
     spec.step != null && spec.step < 1

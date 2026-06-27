@@ -2,7 +2,7 @@ import Slider from '@react-native-community/slider';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -99,10 +99,11 @@ function ScoreSlider({
   hint: string;
 }) {
   const [sliderVal, setSliderVal] = useState<number>(value ?? 0);
-
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState<typeof value>(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
     if (value !== null) setSliderVal(value);
-  }, [value]);
+  }
 
   return (
     <View style={sc.container}>

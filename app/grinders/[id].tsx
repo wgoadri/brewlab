@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import {
   ActivityIndicator,
   Alert,
@@ -54,13 +54,13 @@ export default function EditGrinderScreen() {
   );
   const item = result?.[0];
 
-  const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormValues>({
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: '', settingUnit: '', notes: '' },
   });
 
-  const selectedType = watch('type');
-  const settingUnitValue = watch('settingUnit');
+  const selectedType = useWatch({ control, name: 'type' });
+  const settingUnitValue = useWatch({ control, name: 'settingUnit' });
 
   useEffect(() => {
     if (item && !initialized.current) {
