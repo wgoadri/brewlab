@@ -3,6 +3,7 @@ import type { BrewMethod } from './methods';
 export type BrewDraft = {
   method: BrewMethod;
   beanId?: number;
+  grinderId?: number;
   doseG?: number;
   waterG?: number;
   ratio?: number;
