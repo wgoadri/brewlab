@@ -144,7 +144,7 @@ function CompareSection({
   return (
     <>
       <Text style={s.sectionHeader}>Last vs Best</Text>
-      <View style={[s.card, { paddingVertical: 0 }]}>
+      <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
         {/* Header row */}
         <View style={[s.deltaRow, s.deltaHeader]}>
           <Text style={[s.deltaCol, s.deltaLabelCol, s.deltaHeaderText]}>Param</Text>
@@ -565,12 +565,13 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
+    paddingHorizontal: Spacing.base,
   },
   deltaRowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.border,
   },
-  deltaScoreRow: { paddingBottom: 2 },
+  deltaScoreRow: { paddingBottom: 10 },
   deltaCol: { flex: 1, textAlign: 'right' },
   deltaLabelCol: { flex: 1.5, textAlign: 'left' },
   deltaLabelText: { fontSize: 13, fontWeight: '500', color: Colors.textSecondary },
