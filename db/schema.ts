@@ -71,6 +71,8 @@ export const grinders = sqliteTable('grinders', {
   minSetting: real('min_setting'),
   maxSetting: real('max_setting'),
   stepSize: real('step_size'),
+  /** What one unit on the dial is called: "clicks", "number", "μm", etc. */
+  settingUnit: text('setting_unit'),
   notes: text('notes'),
   archivedAt: integer('archived_at', { mode: 'timestamp' }),
   ...timestamps,

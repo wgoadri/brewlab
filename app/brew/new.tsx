@@ -66,8 +66,29 @@ export default function NewBrewScreen() {
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(grinders.name));
 
   const params = METHODS[method].params;
-  const schema = useMemo(() => buildSchema(params), [params]);
-  const defaultValues = useMemo(() => buildDefaults(params), [params]);
+
+  const selectedGrinder = useMemo(
+    () => grinderList?.find((g) => g.id === selectedGrinderId) ?? null,
+    [grinderList, selectedGrinderId],
+  );
+
+  // Override the grindSetting spec with the selected grinder's own scale + unit.
+  const effectiveParams = useMemo((): ParamSpec[] => {
+    if (!selectedGrinder) return params;
+    return params.map((spec) => {
+      if (spec.key !== 'grindSetting') return spec;
+      return {
+        ...spec,
+        min: selectedGrinder.minSetting ?? spec.min,
+        max: selectedGrinder.maxSetting ?? spec.max,
+        step: selectedGrinder.stepSize ?? spec.step,
+        unit: selectedGrinder.settingUnit ?? spec.unit,
+      };
+    });
+  }, [params, selectedGrinder]);
+
+  const schema = useMemo(() => buildSchema(effectiveParams), [effectiveParams]);
+  const defaultValues = useMemo(() => buildDefaults(effectiveParams), [effectiveParams]);
 
   type FormValues = z.infer<typeof schema>;
 
@@ -251,7 +272,7 @@ export default function NewBrewScreen() {
       {/* Parameters */}
       <Text style={styles.sectionHeader}>Parameters</Text>
       <View style={[styles.card, { gap: 0 }]}>
-        {params.map((spec, idx) => (
+        {effectiveParams.map((spec, idx) => (
           <View key={spec.key} style={idx > 0 ? styles.paramSep : undefined}>
             <Controller
               control={control}
