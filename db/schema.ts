@@ -40,6 +40,7 @@ export const beans = sqliteTable('beans', {
   altitudeMasl: integer('altitude_masl'),
   priceCents: integer('price_cents'), // store money as integer cents (EUR)
   weightG: integer('weight_g'),
+  shop: text('shop'), // where you bought it (store, online shop, market…)
   url: text('url'),
   notes: text('notes'),
   /** Phase 2: your overall rating of the BEAN itself (independent of any brew). */

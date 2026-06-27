@@ -23,6 +23,7 @@ const ROAST_LEVEL_OPTIONS = ['light', 'medium-light', 'medium', 'medium-dark', '
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   roaster: z.string().optional(),
+  shop: z.string().optional(),
   origin: z.string().optional(),
   process: z.enum(PROCESS_OPTIONS).optional(),
   roastLevel: z.enum(ROAST_LEVEL_OPTIONS).optional(),
@@ -41,7 +42,7 @@ export default function NewBeanScreen() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', roaster: '', origin: '', notes: '' },
+    defaultValues: { name: '', roaster: '', shop: '', origin: '', notes: '' },
   });
 
   const onSave = handleSubmit(async (values: FormValues) => {
@@ -50,6 +51,7 @@ export default function NewBeanScreen() {
       await db.insert(beans).values({
         name: values.name,
         roaster: values.roaster || undefined,
+        shop: values.shop || undefined,
         origin: values.origin || undefined,
         process: values.process || undefined,
         roastLevel: values.roastLevel || undefined,
@@ -96,6 +98,24 @@ export default function NewBeanScreen() {
               value={field.value}
               onChangeText={field.onChange}
               placeholder="e.g. Square Mile"
+              placeholderTextColor="#bbb"
+            />
+          )}
+        />
+      </View>
+
+      {/* Shop */}
+      <Text style={styles.sectionTitle}>Shop</Text>
+      <View style={styles.card}>
+        <Controller
+          control={control}
+          name="shop"
+          render={({ field }) => (
+            <TextInput
+              style={styles.input}
+              value={field.value}
+              onChangeText={field.onChange}
+              placeholder="e.g. Madeleine & Gustave, Amazon…"
               placeholderTextColor="#bbb"
             />
           )}
