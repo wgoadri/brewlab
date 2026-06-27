@@ -230,8 +230,9 @@ most users won't have. So:
 - **v1 scope** (build first): views 1, 2, 3, 4. They cover all four core questions, work at
   small N, and need only basic charts + the existing optimizer. Defer 5, 6, 8 behind the N
   tiers; 7 is a nice-to-have.
-- Keep the existing brewlab palette (warm browns, `#7a4a2b` accent, `#fbf7f2` bg) for
-  visual consistency with the current screens.
+- Use `lib/theme.ts` tokens (`Colors`, `Spacing`, `Radii`) for all chart colors and
+  spacing — no hex literals. Key values: accent `#2D6A4F`, bgPage `#E8E5E1`,
+  bgSurface `#FFFFFF`, border `#D4CFC8`, textPrimary `#111110`, textTertiary `#999592`.
 
 ---
 

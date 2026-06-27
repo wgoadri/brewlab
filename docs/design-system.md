@@ -1,10 +1,15 @@
 # brewlab — Design System
 
-Version 1.0 · M7 design pass · 2026-06-27
+Version 1.1 · Post M7 + design-polish · 2026-06-27
 
 This document is the single source of truth for visual implementation. Every value
 listed here is directly writable to a React Native `StyleSheet`. No design decisions
 are left to the implementer.
+
+> **Status:** M7 and the design-polish pass are both complete and merged to `main`.
+> All values in this document reflect the *implemented* state. The canonical source
+> of truth for tokens is `lib/theme.ts` — always prefer importing from there over
+> copying hex values directly.
 
 ---
 
@@ -43,10 +48,12 @@ These are the only colors used in the app. Every screen is built from these toke
 No other hex values should appear in any StyleSheet.
 
 ```
-bgPage:       '#F7F5F2'   Background for every scrollable screen and tab content.
-                           Not pure white — a whisper of warmth, like uncoated
-                           quality paper. Provides just enough contrast to make
-                           white cards read as elevated without shadow.
+bgPage:       '#E8E5E1'   Background for every scrollable screen and tab content.
+                           Warm newsprint: clearly warmer and darker than pure
+                           white, so white (#FFFFFF) cards lift off it visibly
+                           without needing shadows. Darkened from the original
+                           #F7F5F2 in the design-polish pass after the first
+                           build showed cards were not standing out enough.
 
 bgSurface:    '#FFFFFF'   Card background. All cards, form containers, list rows.
                            Pure white. Contrasts gently with bgPage.
@@ -54,7 +61,7 @@ bgSurface:    '#FFFFFF'   Card background. All cards, form containers, list rows
 bgElevated:   '#FFFFFF'   Modal and overlay surface. brew/new, beans/new,
                            brewers/new, grinders/new, and brew/rate all use
                            presentation: 'modal'. The modal's scroll background
-                           stays bgPage (#F7F5F2) — matching contentStyle in
+                           stays bgPage (#E8E5E1) — matching contentStyle in
                            _layout.tsx screenOptions — while cards inside the
                            modal remain bgSurface (#FFFFFF). The native platform
                            backdrop (the dark scrim behind a modal sheet) is
@@ -62,10 +69,13 @@ bgElevated:   '#FFFFFF'   Modal and overlay surface. brew/new, beans/new,
                            bgElevated === bgSurface; the token exists for clarity
                            of intent, not to introduce a new shade.
 
-border:       '#E8E4DF'   All borders and separators: card outlines, param row
+border:       '#D4CFC8'   All borders and separators: card outlines, param row
                            dividers, input borders, tab bar top edge.
-                           Use 0.5 or StyleSheet.hairlineWidth for most separators.
-                           Use 1 for input field borders.
+                           Strengthened from #E8E4DF in design-polish to remain
+                           visible against the darker bgPage.
+                           Use StyleSheet.hairlineWidth for inline separators
+                           (param row dividers, sensory dimension dividers).
+                           Use 1 for input field borders and list card outlines.
 
 textPrimary:  '#111110'   Main content text. Card titles, param values, body copy,
                            navigation titles, primary list item labels. The '10'
@@ -237,10 +247,9 @@ card: {
   borderRadius: 12,
   padding: 16,
   // No shadow. No elevation.
-  // Use borderWidth + borderColor only for cards in list views where
-  // the card sits inside a FlatList and needs a defined edge:
-  // borderWidth: 0.5,
-  // borderColor: '#E8E4DF',
+  // List-item cards (FlatList rows) add a visible edge:
+  // borderWidth: 1,
+  // borderColor: '#D4CFC8',
 },
 ```
 
@@ -280,7 +289,7 @@ paramRow: {
 },
 paramRowSep: {
   height: StyleSheet.hairlineWidth,
-  backgroundColor: '#E8E4DF',
+  backgroundColor: '#D4CFC8',
 },
 paramLabel: {
   fontSize: 13,
@@ -313,15 +322,9 @@ View. Do NOT concatenate `"18 g"` into a single string — the unit must be in
 
 ### ParamInput component (components/ParamInput.tsx)
 
-Current issues:
-1. Label color is `#3a2a1c` (brown) — change to `textSecondary`
-2. Unit is baked into the label string `"Dose (g)"` — change to separate inline
-   suffix in the input row
-3. Input border is `#d6cbbe` (brownish) — change to `border` token
-4. No range hint shown to the user
-5. Switch track color is `#7a4a2b` — change to `accent`
+All of the following changes were applied in M7. The implemented styles are:
 
-Required changes to `ParamInput.tsx` styles:
+`ParamInput.tsx` styles:
 
 ```js
 label: {
@@ -335,7 +338,7 @@ inputRow: {
   flexDirection: 'row',
   alignItems: 'center',
   borderWidth: 1,
-  borderColor: '#E8E4DF',  // was '#d6cbbe'
+  borderColor: '#D4CFC8',
   borderRadius: 8,
   backgroundColor: '#FFFFFF',
   paddingHorizontal: 12,
@@ -360,7 +363,7 @@ rangeHint: {
   marginTop: 4,
 },
 // Switch
-// trackColor: { false: '#E8E4DF', true: '#2D6A4F' }
+// trackColor: { false: '#D4CFC8', true: '#2D6A4F' }
 // thumbColor: '#FFFFFF'
 
 // Chips — same as chip pattern below
@@ -506,14 +509,14 @@ fabText: {
     tabBarStyle: {
       backgroundColor: '#FFFFFF',
       borderTopWidth: 0.5,
-      borderTopColor: '#E8E4DF',
+      borderTopColor: '#D4CFC8',
       elevation: 0,
     },
     tabBarLabelStyle: {
       fontSize: 11,
       fontWeight: '500',
     },
-    headerStyle: { backgroundColor: '#F7F5F2' },
+    headerStyle: { backgroundColor: '#E8E5E1' },
     headerShadowVisible: false,
     headerTitleStyle: {
       fontSize: 17,
@@ -734,7 +737,7 @@ Add `screenOptions` to `<Stack>` so all push/modal screens share the header styl
 ```js
 <Stack
   screenOptions={{
-    headerStyle: { backgroundColor: '#F7F5F2' },
+    headerStyle: { backgroundColor: '#E8E5E1' },
     headerShadowVisible: false,
     headerTitleStyle: {
       fontSize: 17,
@@ -742,7 +745,7 @@ Add `screenOptions` to `<Stack>` so all push/modal screens share the header styl
       color: '#111110',
     },
     headerTintColor: '#2D6A4F',  // back button chevron + text
-    contentStyle: { backgroundColor: '#F7F5F2' },
+    contentStyle: { backgroundColor: '#E8E5E1' },
   }}
 >
 ```
@@ -776,8 +779,8 @@ Update title strings while here:
 - FAB text: change from `'+  New brew'` to `'New brew'` — the '+' can be a
   separate inline character at the correct weight. Or keep the '+' but remove
   the double space.
-- Card background: use the new card spec. Add `borderWidth: 0.5, borderColor:
-  '#E8E4DF'` to list cards (they sit inside a FlatList on bgPage — need the edge).
+- Card background: use the new card spec. List cards have `borderWidth: 1,
+  borderColor: '#D4CFC8'` (they sit inside a FlatList on bgPage — need the edge).
 - Remove `gap: 4` from inside the card; replace with explicit `marginBottom` on
   each sub-element (4 for cardTopRow bottom, 2 for paramsRow bottom).
 
@@ -814,7 +817,7 @@ Render as `<Pressable><Text style={addLink}>Add</Text></Pressable>`. No
 background, no border. The accent color signals it is actionable.
 
 **Brewer and grinder cards:**
-Apply the card spec with `borderWidth: 0.5`. The method/type as secondary text
+Apply the card spec with `borderWidth: 1, borderColor: '#D4CFC8'`. The method/type as secondary text
 below the name is correct and should stay.
 
 ---
@@ -936,7 +939,7 @@ Apply chip styles. Labels ("Definitely yes", "Maybe", "No") are already clean.
 
 **Sensory dimension dividers:**
 Change `height: 1, backgroundColor: '#f0e8de'` to
-`height: StyleSheet.hairlineWidth, backgroundColor: '#E8E4DF'`.
+`height: StyleSheet.hairlineWidth, backgroundColor: '#D4CFC8'`.
 
 **Descriptor group headers:**
 Apply uppercase caption style: `{ fontSize: 11, fontWeight: '500',
@@ -1035,7 +1038,7 @@ from here — no hex literals in StyleSheets.
 ```ts
 export const Colors = {
   // Page / surface
-  bgPage:         '#F7F5F2',
+  bgPage:         '#E8E5E1',  // warm newsprint — darkened in design-polish
   bgSurface:      '#FFFFFF',
   bgElevated:     '#FFFFFF',  // modal card surfaces — same value, distinct intent
 
@@ -1045,7 +1048,7 @@ export const Colors = {
   textTertiary:   '#999592',
 
   // Borders
-  border:         '#E8E4DF',
+  border:         '#D4CFC8',  // strengthened in design-polish
 
   // Accent
   accent:         '#2D6A4F',
