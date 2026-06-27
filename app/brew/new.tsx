@@ -165,7 +165,7 @@ export default function NewBrewScreen() {
       notes: notes.trim() || undefined,
     });
 
-    router.push('/brew/timer');
+    router.replace('/brew/timer');
   });
 
   return (
