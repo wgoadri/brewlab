@@ -20,6 +20,7 @@ import { db } from '@/db/client';
 import { beans, brews, grinders } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { setPendingBrew } from '@/lib/brewDraft';
+import { clearSuggestion, getSuggestion, type BrewSuggestion } from '@/lib/brewSuggestion';
 import { ParamInput } from '@/components/ParamInput';
 import { Colors, Radii, Spacing } from '@/lib/theme';
 
@@ -56,11 +57,17 @@ function buildDefaults(params: ParamSpec[]): Record<string, number | string | bo
 
 export default function NewBrewScreen() {
   const router = useRouter();
-  const [method, setMethod] = useState<BrewMethod>('aeropress');
+  // Lazily consume any pending optimizer suggestion before any other state init.
+  const [pendingSuggestion] = useState<BrewSuggestion | null>(() => {
+    const s = getSuggestion();
+    if (s) { clearSuggestion(); return s; }
+    return null;
+  });
+  const [method, setMethod] = useState<BrewMethod>(pendingSuggestion?.method ?? 'aeropress');
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState('');
-  const [selectedBeanId, setSelectedBeanId] = useState<number | null>(null);
-  const [selectedGrinderId, setSelectedGrinderId] = useState<number | null>(null);
+  const [selectedBeanId, setSelectedBeanId] = useState<number | null>(pendingSuggestion?.beanId ?? null);
+  const [selectedGrinderId, setSelectedGrinderId] = useState<number | null>(pendingSuggestion?.grinderId ?? null);
 
   const { data: beanList } = useLiveQuery(db.select().from(beans).orderBy(beans.name));
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(grinders.name));
@@ -98,8 +105,17 @@ export default function NewBrewScreen() {
   });
 
   useEffect(() => {
-    reset(buildDefaults(METHODS[method].params));
-  }, [method, reset]);
+    const defaults = buildDefaults(METHODS[method].params);
+    if (pendingSuggestion?.method === method) {
+      const merged = { ...defaults };
+      for (const [k, v] of Object.entries(pendingSuggestion.params)) {
+        merged[k] = v as number | string | boolean;
+      }
+      reset(merged);
+    } else {
+      reset(defaults);
+    }
+  }, [method, pendingSuggestion, reset]);
 
   function buildColumnsAndParams(values: FormValues): {
     columns: Record<string, number | string | boolean | undefined>;
@@ -271,6 +287,11 @@ export default function NewBrewScreen() {
 
       {/* Parameters */}
       <Text style={styles.sectionHeader}>Parameters</Text>
+      {pendingSuggestion?.method === method && (
+        <View style={styles.suggestionBanner}>
+          <Text style={styles.suggestionBannerText}>Prefilled from optimizer suggestion</Text>
+        </View>
+      )}
       <View style={[styles.card, { gap: 0 }]}>
         {effectiveParams.map((spec, idx) => (
           <View key={spec.key} style={idx > 0 ? styles.paramSep : undefined}>
@@ -349,4 +370,12 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { color: Colors.accent, fontSize: 16, fontWeight: '600', letterSpacing: 0.2 },
   btnDisabled: { opacity: 0.4 },
+  suggestionBanner: {
+    backgroundColor: Colors.accentSubtle,
+    borderRadius: Radii.chip,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: 6,
+    marginBottom: Spacing.sm,
+  },
+  suggestionBannerText: { fontSize: 12, color: Colors.accent, fontWeight: '500' },
 });

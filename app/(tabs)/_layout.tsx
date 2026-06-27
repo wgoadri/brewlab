@@ -42,6 +42,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="construct-outline" color={color} size={size} />,
         }}
       />
+      <Tabs.Screen
+        name="analysis"
+        options={{
+          title: 'Analysis',
+          tabBarIcon: ({ color, size }) => <Ionicons name="bar-chart-outline" color={color} size={size} />,
+        }}
+      />
     </Tabs>
   );
 }
