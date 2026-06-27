@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import Slider from '@react-native-community/slider';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -16,6 +17,16 @@ export interface ParamInputProps {
   value: string | number | boolean | undefined;
   onChange: (v: string | number | boolean) => void;
   error?: string;
+}
+
+// Use a slider when the param has a bounded range that fits comfortably on a track.
+function shouldUseSlider(spec: ParamSpec): boolean {
+  if (spec.min == null || spec.max == null) return false;
+  const range = spec.max - spec.min;
+  if (range < 3) return false;
+  if (spec.type === 'int') return range <= 60;
+  if (spec.type === 'number' && spec.step != null) return range / spec.step <= 30;
+  return false;
 }
 
 export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
@@ -60,6 +71,17 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
         </View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
+    );
+  }
+
+  if ((spec.type === 'number' || spec.type === 'int') && shouldUseSlider(spec)) {
+    return (
+      <SliderInput
+        spec={spec}
+        value={value}
+        onChange={onChange}
+        error={error}
+      />
     );
   }
 
@@ -111,6 +133,59 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
   );
 }
 
+// ── Slider variant ────────────────────────────────────────────────────────────
+
+function SliderInput({ spec, value, onChange, error }: ParamInputProps) {
+  const initial =
+    typeof value === 'number'
+      ? value
+      : spec.default != null
+        ? Number(spec.default)
+        : (spec.min ?? 0);
+
+  const [sliderVal, setSliderVal] = useState<number>(initial);
+
+  useEffect(() => {
+    if (typeof value === 'number') setSliderVal(value);
+  }, [value]);
+
+  const formatted =
+    spec.step != null && spec.step < 1
+      ? sliderVal.toFixed(1)
+      : String(Math.round(sliderVal));
+
+  return (
+    <View>
+      <View style={styles.sliderHeaderRow}>
+        <Text style={styles.label}>{spec.label}</Text>
+        <View style={styles.sliderValueRow}>
+          <Text style={styles.sliderNumber}>{formatted}</Text>
+          {spec.unit ? <Text style={styles.sliderUnit}>{spec.unit}</Text> : null}
+        </View>
+      </View>
+      <Slider
+        style={styles.slider}
+        minimumValue={spec.min ?? 0}
+        maximumValue={spec.max ?? 100}
+        step={spec.step ?? 1}
+        value={sliderVal}
+        onValueChange={setSliderVal}
+        onSlidingComplete={(v) => {
+          const rounded = spec.type === 'int' ? Math.round(v) : v;
+          setSliderVal(rounded);
+          onChange(rounded);
+        }}
+        minimumTrackTintColor={Colors.accent}
+        maximumTrackTintColor={Colors.border}
+        thumbTintColor={Colors.accent}
+      />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+    </View>
+  );
+}
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   label: {
     fontSize: 13,
@@ -160,4 +235,32 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: '500', color: Colors.textSecondary },
   chipTextActive: { fontSize: 13, fontWeight: '600', color: Colors.bgSurface },
   error: { color: Colors.destructive, fontSize: 12, marginTop: 4 },
+  // Slider
+  sliderHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 0,
+  },
+  sliderValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 2,
+  },
+  sliderNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+  },
+  sliderUnit: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+    marginHorizontal: -8,
+    alignSelf: 'center',
+  },
 });

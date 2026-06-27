@@ -1,7 +1,8 @@
+import Slider from '@react-native-community/slider';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -49,7 +50,7 @@ const DESCRIPTOR_GROUPS = [
   { label: 'Other',           tags: ['earthy', 'woody', 'herbal', 'fermented'] },
 ];
 
-// ── ScoreRow ───────────────────────────────────────────────────────────────────
+// ── ScoreRow (circle grid — used for sensory dimensions) ───────────────────────
 
 function ScoreRow({
   max,
@@ -82,6 +83,57 @@ const sr = StyleSheet.create({
   circleActive: { backgroundColor: Colors.accent },
   num:          { fontSize: 12, fontWeight: '500', color: Colors.textSecondary, fontVariant: ['tabular-nums'] },
   numActive:    { color: Colors.bgSurface, fontWeight: '600' },
+});
+
+// ── ScoreSlider (used for enjoyment + harmony) ─────────────────────────────────
+
+function ScoreSlider({
+  max,
+  value,
+  onChange,
+  hint,
+}: {
+  max: number;
+  value: number | null;
+  onChange: (v: number) => void;
+  hint: string;
+}) {
+  const [sliderVal, setSliderVal] = useState<number>(value ?? 0);
+
+  useEffect(() => {
+    if (value !== null) setSliderVal(value);
+  }, [value]);
+
+  return (
+    <View style={sc.container}>
+      <View style={sc.valueRow}>
+        <Text style={sc.number}>{Math.round(sliderVal)}</Text>
+        <Text style={sc.max}>/ {max}</Text>
+      </View>
+      <Slider
+        style={sc.slider}
+        minimumValue={0}
+        maximumValue={max}
+        step={1}
+        value={sliderVal}
+        onValueChange={setSliderVal}
+        onSlidingComplete={(v) => { const r = Math.round(v); setSliderVal(r); onChange(r); }}
+        minimumTrackTintColor={Colors.accent}
+        maximumTrackTintColor={Colors.border}
+        thumbTintColor={Colors.accent}
+      />
+      <Text style={sc.hint}>{hint}</Text>
+    </View>
+  );
+}
+
+const sc = StyleSheet.create({
+  container: { gap: 0 },
+  valueRow:  { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+  number:    { fontSize: 36, fontWeight: '700', color: Colors.accent, fontVariant: ['tabular-nums'] },
+  max:       { fontSize: 14, color: Colors.textTertiary },
+  slider:    { width: '100%', height: 40, marginHorizontal: -8 },
+  hint:      { fontSize: 12, fontStyle: 'italic', color: Colors.textTertiary, marginTop: 2 },
 });
 
 // ── Main screen ────────────────────────────────────────────────────────────────
@@ -222,16 +274,14 @@ export default function RateBrewScreen() {
 
   const quickScore = (
     <View style={{ gap: Spacing.md }}>
-      <Text style={s.sectionHeader}>Overall Enjoyment (0–10)</Text>
+      <Text style={s.sectionHeader}>Overall Enjoyment</Text>
       <View style={s.card}>
-        <ScoreRow max={10} value={enjoyment} onChange={setEnjoyment} />
-        <Text style={s.hint}>0 = dislike extremely · 10 = like extremely</Text>
+        <ScoreSlider max={10} value={enjoyment} onChange={setEnjoyment} hint="0 = dislike extremely · 10 = like extremely" />
       </View>
 
-      <Text style={s.sectionHeader}>Harmony (0–5)</Text>
+      <Text style={s.sectionHeader}>Harmony</Text>
       <View style={s.card}>
-        <ScoreRow max={5} value={harmony} onChange={setHarmony} />
-        <Text style={s.hint}>How balanced and integrated is the cup?</Text>
+        <ScoreSlider max={5} value={harmony} onChange={setHarmony} hint="How balanced and integrated is the cup?" />
       </View>
 
       <Text style={s.sectionHeader}>Brew Intent</Text>
