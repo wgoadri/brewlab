@@ -1,6 +1,6 @@
-import { Link } from 'expo-router';
 import { desc } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { Link, useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +9,13 @@ import { brews } from '@/db/schema';
 import { METHODS, type BrewMethod } from '@/lib/methods';
 
 export default function BrewsScreen() {
-  const { data } = useLiveQuery(db.select().from(brews).orderBy(desc(brews.brewedAt)));
+  const router = useRouter();
+  const { data } = useLiveQuery(
+    db.query.brews.findMany({
+      with: { bean: true },
+      orderBy: [desc(brews.brewedAt)],
+    })
+  );
 
   return (
     <SafeAreaView style={styles.flex} edges={['bottom']}>
@@ -24,17 +30,28 @@ export default function BrewsScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {METHODS[item.method as BrewMethod]?.label ?? item.method}
+          <Pressable style={styles.card} onPress={() => router.push(`/brew/${item.id}`)}>
+            <View style={styles.cardTopRow}>
+              <Text style={styles.cardTitle}>
+                {METHODS[item.method as BrewMethod]?.label ?? item.method}
+                {item.bean ? (
+                  <Text style={styles.beanName}> · {item.bean.name}</Text>
+                ) : (
+                  <Text style={styles.muted}> · No bean</Text>
+                )}
+              </Text>
+              <Text style={styles.dateText}>
+                {item.brewedAt.toLocaleDateString()}
+              </Text>
+            </View>
+            <Text style={styles.paramsRow}>
+              {item.doseG ?? '–'} g · {item.waterG ?? '–'} g · {item.waterTempC ?? '–'} °C
+              {' · '}grind {item.grindSetting ?? '–'}
             </Text>
-            <Text style={styles.muted}>
-              {item.doseG ?? '–'} g · {item.waterG ?? '–'} g water · {item.waterTempC ?? '–'} °C
-            </Text>
-            <Text style={styles.score}>
-              {item.overallRating != null ? `★ ${item.overallRating}/10` : 'Not rated'}
-            </Text>
-          </View>
+            {item.overallRating != null && (
+              <Text style={styles.score}>★ {item.overallRating} / 10</Text>
+            )}
+          </Pressable>
         )}
       />
 
@@ -54,11 +71,20 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '600', color: '#3a2a1c' },
   muted: { color: '#8a7a6c' },
   card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 4, marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#3a2a1c' },
-  score: { marginTop: 4, color: '#7a4a2b', fontWeight: '600' },
+  cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: '#3a2a1c', flex: 1, flexShrink: 1 },
+  beanName: { color: '#3a2a1c', fontWeight: '400' },
+  dateText: { fontSize: 12, color: '#8a7a6c', marginLeft: 8 },
+  paramsRow: { color: '#8a7a6c', fontSize: 13 },
+  score: { marginTop: 2, color: '#7a4a2b', fontWeight: '600', fontSize: 13 },
   fab: {
-    position: 'absolute', right: 16, bottom: 24,
-    backgroundColor: '#7a4a2b', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 28,
+    position: 'absolute',
+    right: 16,
+    bottom: 24,
+    backgroundColor: '#7a4a2b',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 28,
   },
   fabText: { color: '#fff', fontWeight: '700' },
 });

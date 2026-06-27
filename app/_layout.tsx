@@ -37,6 +37,9 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="brew/new" options={{ title: 'New brew', presentation: 'modal' }} />
+          <Stack.Screen name="beans/new" options={{ title: 'Add bean', presentation: 'modal' }} />
+          <Stack.Screen name="brewers/new" options={{ title: 'Add brewer', presentation: 'modal' }} />
+          <Stack.Screen name="brew/[id]" options={{ title: 'Brew detail' }} />
         </Stack>
       </Suspense>
     </SafeAreaProvider>

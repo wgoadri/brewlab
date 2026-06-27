@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { desc } from 'drizzle-orm';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Link } from 'expo-router';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db } from '@/db/client';
@@ -32,6 +33,12 @@ export default function BrewersScreen() {
           </View>
         )}
       />
+
+      <Link href="/brewers/new" asChild>
+        <Pressable style={styles.fab}>
+          <Text style={styles.fabText}>+  Add brewer</Text>
+        </Pressable>
+      </Link>
     </SafeAreaView>
   );
 }
@@ -44,4 +51,14 @@ const styles = StyleSheet.create({
   muted: { color: '#8a7a6c' },
   card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 4, marginBottom: 12 },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#3a2a1c' },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 24,
+    backgroundColor: '#7a4a2b',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 28,
+  },
+  fabText: { color: '#fff', fontWeight: '700' },
 });
