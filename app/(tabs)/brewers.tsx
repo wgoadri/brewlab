@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { desc } from 'drizzle-orm';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import { brewers, grinders } from '@/db/schema';
 import { METHODS, type BrewMethod } from '@/lib/methods';
 
 export default function GearScreen() {
+  const router = useRouter();
   const { data: brewerList } = useLiveQuery(db.select().from(brewers).orderBy(desc(brewers.createdAt)));
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(desc(grinders.createdAt)));
 
@@ -26,13 +27,13 @@ export default function GearScreen() {
         </View>
         {brewerList && brewerList.length > 0 ? (
           brewerList.map((item) => (
-            <View key={item.id} style={styles.card}>
+            <Pressable key={item.id} style={styles.card} onPress={() => router.push(`/brewers/${item.id}`)}>
               <Text style={styles.cardTitle}>{item.name}</Text>
               <Text style={styles.muted}>
                 {METHODS[item.method as BrewMethod]?.label ?? item.method}
                 {item.model ? ` · ${item.model}` : ''}
               </Text>
-            </View>
+            </Pressable>
           ))
         ) : (
           <View style={styles.empty}>
@@ -51,7 +52,7 @@ export default function GearScreen() {
         </View>
         {grinderList && grinderList.length > 0 ? (
           grinderList.map((item) => (
-            <View key={item.id} style={styles.card}>
+            <Pressable key={item.id} style={styles.card} onPress={() => router.push(`/grinders/${item.id}`)}>
               <Text style={styles.cardTitle}>{item.name}</Text>
               <Text style={styles.muted}>
                 {item.type ?? 'Grinder'}
@@ -59,7 +60,7 @@ export default function GearScreen() {
                   ? ` · dial ${item.minSetting}–${item.maxSetting}`
                   : ''}
               </Text>
-            </View>
+            </Pressable>
           ))
         ) : (
           <View style={styles.empty}>

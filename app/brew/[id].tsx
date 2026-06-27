@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
@@ -42,6 +42,24 @@ export default function BrewDetailScreen() {
   }
 
   const methodDef = METHODS[brew.method as BrewMethod];
+
+  function onDelete() {
+    Alert.alert('Delete brew?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await db.delete(brews).where(eq(brews.id, Number(id)));
+            router.back();
+          } catch (err) {
+            Alert.alert('Delete failed', err instanceof Error ? err.message : String(err));
+          }
+        },
+      },
+    ]);
+  }
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -139,6 +157,9 @@ export default function BrewDetailScreen() {
           </>
         )}
       </View>
+      <Pressable style={styles.deleteBtn} onPress={onDelete}>
+        <Text style={styles.deleteBtnText}>Delete brew</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -165,6 +186,11 @@ const styles = StyleSheet.create({
   paramValue: { fontSize: 14, fontWeight: '600', color: '#3a2a1c', textAlign: 'right' },
   notesText: { fontSize: 14, color: '#3a2a1c', lineHeight: 21 },
   ratingText: { fontSize: 18, fontWeight: '700', color: '#7a4a2b' },
+  deleteBtn: {
+    marginTop: 16, marginHorizontal: 0, borderRadius: 12, paddingVertical: 14,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#c62828',
+  },
+  deleteBtnText: { color: '#c62828', fontSize: 15, fontWeight: '600' },
   rateBtn: {
     marginTop: 8, backgroundColor: '#7a4a2b', borderRadius: 10,
     paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start',
