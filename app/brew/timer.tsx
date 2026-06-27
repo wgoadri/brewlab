@@ -9,6 +9,7 @@ import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { METHODS } from '@/lib/methods';
 import { getPendingBrew, clearPendingBrew, type BrewDraft } from '@/lib/brewDraft';
+import { Colors } from '@/lib/theme';
 
 function formatMs(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
@@ -16,8 +17,6 @@ function formatMs(ms: number): string {
   const s = totalSec % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
-
-// ── Wrapper ─────────────────────────────────────────────────────────────────
 
 export default function TimerScreen() {
   const router = useRouter();
@@ -36,8 +35,6 @@ export default function TimerScreen() {
 
   return <TimerContent draft={draft} />;
 }
-
-// ── Content ──────────────────────────────────────────────────────────────────
 
 function TimerContent({ draft }: { draft: BrewDraft }) {
   const router = useRouter();
@@ -79,12 +76,9 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   useEffect(() => {
     if (timerMode !== 'guided') return;
     if (currentStep.durationSec && stepElapsedMs >= durationMs) {
-      // schedule outside effect body to satisfy react-hooks/set-state-in-effect
       const id = setTimeout(advanceStep, 0);
       return () => clearTimeout(id);
     }
-    // advanceStep closes over stepIndex/stepStartMs which change each render;
-    // re-registering on `now` (the tick) is intentional.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
 
@@ -102,6 +96,7 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
       const result = await db.insert(brews).values({
         method: draft.method,
         beanId: draft.beanId,
+        grinderId: draft.grinderId,
         doseG: draft.doseG,
         waterG: draft.waterG,
         ratio: draft.ratio,
@@ -126,19 +121,17 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
 
   let advanceBtnLabel: string;
   if (isLastStep) {
-    advanceBtnLabel = 'Done ✓';
+    advanceBtnLabel = 'Done';
   } else if (timerMode === 'guided') {
-    advanceBtnLabel = 'Skip →';
+    advanceBtnLabel = 'Skip';
   } else {
-    advanceBtnLabel = 'Next →';
+    advanceBtnLabel = 'Next';
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {/* Total elapsed */}
       <Text style={styles.totalElapsed}>{formatMs(totalElapsedMs)} total</Text>
 
-      {/* Step info */}
       <View style={styles.stepInfo}>
         <Text style={styles.stepCounter}>
           Step {stepIndex + 1} of {steps.length}
@@ -146,17 +139,14 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
         <Text style={styles.stepLabel}>{currentStep.label}</Text>
       </View>
 
-      {/* Progress bar */}
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${progress * 100}%` as `${number}%` }]} />
       </View>
 
-      {/* Countdown / count-up */}
       <Text style={[styles.timeDisplay, countdownWarning && styles.timeDisplayWarning]}>
         {timerMode === 'guided' ? formatMs(remaining) : formatMs(stepElapsedMs)}
       </Text>
 
-      {/* Advance / Done button */}
       <Pressable
         style={[styles.btn, saving && styles.btnDisabled]}
         onPress={isLastStep ? onDone : advanceStep}
@@ -171,74 +161,76 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1008',
+    backgroundColor: Colors.timerBg,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 24,
     paddingHorizontal: 24,
   },
   errorText: {
-    color: '#f5ede3',
+    color: Colors.timerText,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   totalElapsed: {
-    color: '#a89080',
-    fontSize: 14,
+    color: Colors.textSecondary,
+    fontSize: 13,
+    fontVariant: ['tabular-nums'],
     position: 'absolute',
-    top: 24,
+    top: 0,
   },
   stepInfo: {
     alignItems: 'center',
     gap: 8,
   },
   stepCounter: {
-    color: '#a89080',
-    fontSize: 14,
-    letterSpacing: 1,
+    color: Colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   stepLabel: {
-    color: '#f5ede3',
-    fontSize: 28,
-    fontWeight: '700',
+    color: Colors.timerText,
+    fontSize: 30,
+    fontWeight: '300',
     textAlign: 'center',
   },
   progressTrack: {
     width: '100%',
-    height: 6,
-    backgroundColor: '#3a2a1c',
-    borderRadius: 3,
+    height: 3,
+    backgroundColor: Colors.timerTrack,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
-    height: 6,
-    backgroundColor: '#e8a87c',
-    borderRadius: 3,
+    height: 3,
+    backgroundColor: Colors.accent,
+    borderRadius: 2,
   },
   timeDisplay: {
-    color: '#e8a87c',
-    fontSize: 56,
-    fontWeight: '700',
+    color: Colors.timerText,
+    fontSize: 64,
+    fontWeight: '300',
     fontVariant: ['tabular-nums'],
+    letterSpacing: -1,
   },
   timeDisplayWarning: {
-    color: '#e84c4c',
+    color: Colors.destructive,
   },
   btn: {
-    backgroundColor: '#7a4a2b',
+    backgroundColor: Colors.accent,
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
+    paddingVertical: 18,
+    paddingHorizontal: 56,
     alignItems: 'center',
+    minWidth: 200,
   },
-  btnDisabled: {
-    opacity: 0.5,
-  },
+  btnDisabled: { opacity: 0.5 },
   btnText: {
-    color: '#fff',
+    color: Colors.timerText,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });

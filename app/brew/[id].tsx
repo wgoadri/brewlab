@@ -6,13 +6,17 @@ import { Alert, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 import type { Brew } from '@/db/schema';
 
-function getParamValue(brew: Brew, spec: ParamSpec): string {
+function getParamValue(brew: Brew, spec: ParamSpec): { value: string; unit: string } {
   const raw = spec.column != null
     ? (brew[spec.column] as number | string | boolean | null | undefined)
     : (brew.paramsJson?.[spec.key] as number | string | boolean | null | undefined);
-  return raw != null ? String(raw) : '–';
+  return {
+    value: raw != null ? String(raw) : '–',
+    unit: spec.unit ?? '',
+  };
 }
 
 export default function BrewDetailScreen() {
@@ -28,7 +32,7 @@ export default function BrewDetailScreen() {
   if (updatedAt === undefined) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#7a4a2b" />
+        <ActivityIndicator size="large" color={Colors.accent} />
       </View>
     );
   }
@@ -36,7 +40,7 @@ export default function BrewDetailScreen() {
   if (!brew) {
     return (
       <View style={styles.center}>
-        <Text style={styles.notFoundText}>Brew not found</Text>
+        <Text style={styles.muted}>Brew not found.</Text>
       </View>
     );
   }
@@ -63,72 +67,87 @@ export default function BrewDetailScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      {/* Header card */}
-      <Text style={styles.sectionTitle}>Overview</Text>
+      {/* Overview */}
+      <Text style={styles.sectionHeader}>Overview</Text>
       <View style={styles.card}>
         <Text style={styles.methodLabel}>{methodDef?.label ?? brew.method}</Text>
         <Text style={styles.beanName}>
           {brew.bean ? brew.bean.name : 'No bean selected'}
         </Text>
-        <Text style={styles.muted}>{brew.brewedAt.toLocaleDateString()}</Text>
+        <Text style={styles.dateText}>{brew.brewedAt.toLocaleDateString()}</Text>
       </View>
 
-      {/* Parameters card */}
+      {/* Parameters */}
       {methodDef && (
         <>
-          <Text style={styles.sectionTitle}>Parameters</Text>
-          <View style={styles.card}>
-            {methodDef.params.map((spec, idx) => (
-              <View key={spec.key} style={[styles.paramRow, idx > 0 && styles.paramSep]}>
-                <Text style={styles.paramLabel}>{spec.label}</Text>
-                <Text style={styles.paramValue}>
-                  {getParamValue(brew, spec)}{spec.unit ? ` ${spec.unit}` : ''}
-                </Text>
-              </View>
-            ))}
+          <Text style={styles.sectionHeader}>Parameters</Text>
+          <View style={[styles.card, { paddingVertical: 0, paddingHorizontal: Spacing.base }]}>
+            {methodDef.params.map((spec, idx) => {
+              const { value, unit } = getParamValue(brew, spec);
+              return (
+                <View key={spec.key}>
+                  {idx > 0 && <View style={styles.paramSep} />}
+                  <View style={styles.paramRow}>
+                    <Text style={styles.paramLabel}>{spec.label}</Text>
+                    <View style={styles.paramValueRow}>
+                      <Text style={styles.paramValue}>{value}</Text>
+                      {unit ? <Text style={styles.paramUnit}>{unit}</Text> : null}
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
             {brew.ratio != null && (
-              <View style={[styles.paramRow, styles.paramSep]}>
-                <Text style={styles.paramLabel}>Ratio</Text>
-                <Text style={styles.paramValue}>1 : {brew.ratio.toFixed(1)}</Text>
+              <View>
+                <View style={styles.paramSep} />
+                <View style={styles.paramRow}>
+                  <Text style={styles.paramLabel}>Ratio</Text>
+                  <View style={styles.paramValueRow}>
+                    <Text style={styles.paramValue}>1 : {brew.ratio.toFixed(1)}</Text>
+                  </View>
+                </View>
               </View>
             )}
           </View>
         </>
       )}
 
-      {/* Notes card */}
+      {/* Notes */}
       {brew.notes != null && brew.notes.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Notes</Text>
+          <Text style={styles.sectionHeader}>Notes</Text>
           <View style={styles.card}>
             <Text style={styles.notesText}>{brew.notes}</Text>
           </View>
         </>
       )}
 
-      {/* Rating card */}
-      <Text style={styles.sectionTitle}>Rating</Text>
+      {/* Rating */}
+      <Text style={styles.sectionHeader}>Rating</Text>
       <View style={styles.card}>
         {brew.isPass === null || brew.isPass === undefined ? (
           <>
-            <Text style={styles.muted}>Not rated yet</Text>
+            <Text style={styles.muted}>Not rated yet.</Text>
             <Pressable
-              style={styles.rateBtn}
+              style={styles.primaryBtn}
               onPress={() => router.push({ pathname: '/brew/rate', params: { id: brew.id } })}
             >
-              <Text style={styles.rateBtnText}>Rate this brew →</Text>
+              <Text style={styles.primaryBtnText}>Rate this brew</Text>
             </Pressable>
           </>
         ) : brew.isPass === false ? (
           <>
-            <Text style={{ color: '#c62828', fontWeight: '700', fontSize: 16 }}>❌ Failed</Text>
+            <Text style={styles.failLabel}>Failed</Text>
             {brew.failReasonsJson?.map(r => (
-              <Text key={r} style={styles.muted}>• {r}</Text>
+              <Text key={r} style={styles.muted}>· {r}</Text>
             ))}
           </>
         ) : (
           <>
-            <Text style={styles.ratingText}>★ {brew.overallRating} / 10</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+              <Text style={styles.scoreDisplay}>{brew.overallRating}</Text>
+              <Text style={styles.scoreSuffix}>/10</Text>
+            </View>
             {brew.harmony != null && (
               <Text style={styles.muted}>Harmony: {brew.harmony} / 5</Text>
             )}
@@ -146,10 +165,10 @@ export default function BrewDetailScreen() {
                 {brew.descriptorsJson.map(d => (
                   <View
                     key={d}
-                    style={{ backgroundColor: '#eaded2', borderRadius: 12,
+                    style={{ backgroundColor: Colors.accentSubtle, borderRadius: Radii.chip,
                              paddingHorizontal: 10, paddingVertical: 4 }}
                   >
-                    <Text style={{ fontSize: 12, color: '#5a4636' }}>{d}</Text>
+                    <Text style={{ fontSize: 12, color: Colors.textSecondary }}>{d}</Text>
                   </View>
                 ))}
               </View>
@@ -157,43 +176,57 @@ export default function BrewDetailScreen() {
           </>
         )}
       </View>
-      <Pressable style={styles.deleteBtn} onPress={onDelete}>
-        <Text style={styles.deleteBtnText}>Delete brew</Text>
+
+      {/* Delete */}
+      <Pressable style={styles.destructiveBtn} onPress={onDelete}>
+        <Text style={styles.destructiveBtnText}>Delete brew</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#fbf7f2' },
-  content: { padding: 16, paddingBottom: 40, gap: 8 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fbf7f2' },
-  notFoundText: { fontSize: 16, color: '#8a7a6c' },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3a2a1c',
-    marginTop: 12,
-    marginBottom: 4,
+  scroll: { flex: 1, backgroundColor: Colors.bgPage },
+  content: { padding: Spacing.base, paddingBottom: Spacing.xxxl, gap: 0 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.bgPage },
+  sectionHeader: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: Colors.textTertiary,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.sm,
+    marginTop: Spacing.lg,
+    paddingHorizontal: 4,
   },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 6 },
-  methodLabel: { fontSize: 20, fontWeight: '700', color: '#3a2a1c' },
-  beanName: { fontSize: 15, color: '#8a7a6c' },
-  muted: { color: '#8a7a6c', fontSize: 14 },
-  paramRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  paramSep: { borderTopWidth: 1, borderTopColor: '#f0e8de', paddingTop: 8, marginTop: 2 },
-  paramLabel: { fontSize: 14, color: '#8a7a6c', flex: 1 },
-  paramValue: { fontSize: 14, fontWeight: '600', color: '#3a2a1c', textAlign: 'right' },
-  notesText: { fontSize: 14, color: '#3a2a1c', lineHeight: 21 },
-  ratingText: { fontSize: 18, fontWeight: '700', color: '#7a4a2b' },
-  deleteBtn: {
-    marginTop: 16, marginHorizontal: 0, borderRadius: 12, paddingVertical: 14,
-    alignItems: 'center', borderWidth: 1.5, borderColor: '#c62828',
+  card: { backgroundColor: Colors.bgSurface, borderRadius: Radii.card, padding: Spacing.base, gap: 6 },
+  methodLabel: { fontSize: 17, fontWeight: '600', color: Colors.textPrimary },
+  beanName: { fontSize: 15, color: Colors.textSecondary },
+  dateText: { fontSize: 12, color: Colors.textTertiary, fontVariant: ['tabular-nums'] },
+  muted: { color: Colors.textSecondary, fontSize: 14 },
+  paramRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
-  deleteBtnText: { color: '#c62828', fontSize: 15, fontWeight: '600' },
-  rateBtn: {
-    marginTop: 8, backgroundColor: '#7a4a2b', borderRadius: 10,
-    paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start',
+  paramSep: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border },
+  paramLabel: { fontSize: 13, fontWeight: '500', color: Colors.textSecondary, flex: 1, letterSpacing: 0.1 },
+  paramValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+  paramValue: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, fontVariant: ['tabular-nums'], textAlign: 'right' },
+  paramUnit: { fontSize: 12, fontWeight: '400', color: Colors.textTertiary },
+  notesText: { fontSize: 14, color: Colors.textPrimary, lineHeight: 21 },
+  scoreDisplay: { fontSize: 28, fontWeight: '700', color: Colors.accent, fontVariant: ['tabular-nums'] },
+  scoreSuffix: { fontSize: 14, color: Colors.textTertiary },
+  failLabel: { color: Colors.destructive, fontWeight: '600', fontSize: 16 },
+  primaryBtn: {
+    marginTop: 8, backgroundColor: Colors.accent, borderRadius: Radii.button,
+    paddingVertical: 12, paddingHorizontal: 16, alignSelf: 'flex-start',
   },
-  rateBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  primaryBtnText: { color: Colors.bgSurface, fontWeight: '600', fontSize: 14, letterSpacing: 0.2 },
+  destructiveBtn: {
+    marginTop: Spacing.sm, borderRadius: Radii.button, paddingVertical: 14, alignItems: 'center',
+    borderWidth: 1.5, borderColor: Colors.destructive,
+  },
+  destructiveBtnText: { color: Colors.destructive, fontSize: 15, fontWeight: '500' },
 });

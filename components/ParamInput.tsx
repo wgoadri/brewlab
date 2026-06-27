@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import type { ParamSpec } from '@/lib/methods';
+import { Colors, Radii } from '@/lib/theme';
 
 export interface ParamInputProps {
   spec: ParamSpec;
@@ -22,18 +23,15 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
     value != null && value !== '' ? String(value) : '',
   );
 
-  const label =
-    spec.unit ? `${spec.label} (${spec.unit})` : spec.label;
-
   if (spec.type === 'boolean') {
     return (
       <View style={styles.row}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.label}>{spec.label}</Text>
         <Switch
           value={Boolean(value)}
           onValueChange={onChange}
-          thumbColor='#fff'
-          trackColor={{ false: '#ccc', true: '#7a4a2b' }}
+          thumbColor={Colors.bgSurface}
+          trackColor={{ false: Colors.border, true: Colors.accent }}
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
@@ -43,7 +41,7 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
   if (spec.type === 'enum' && spec.options) {
     return (
       <View>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.label}>{spec.label}</Text>
         <View style={styles.chipRow}>
           {spec.options.map((opt) => {
             const active = value === opt;
@@ -67,21 +65,29 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
 
   if (spec.type === 'number' || spec.type === 'int') {
     const keyboard = spec.type === 'int' ? 'numeric' : 'decimal-pad';
+    const rangeHint =
+      spec.min != null && spec.max != null
+        ? `${spec.min} – ${spec.max}${spec.unit ? ' ' + spec.unit : ''}`
+        : null;
     return (
       <View>
-        <Text style={styles.label}>{label}</Text>
-        <TextInput
-          style={[styles.input, error ? styles.inputError : null]}
-          keyboardType={keyboard}
-          value={raw}
-          onChangeText={(t) => setRaw(t)}
-          onBlur={() => {
-            const parsed = spec.type === 'int' ? parseInt(raw, 10) : parseFloat(raw);
-            onChange(parsed);
-          }}
-          placeholder={spec.default != null ? String(spec.default) : undefined}
-          placeholderTextColor='#bbb'
-        />
+        <Text style={styles.label}>{spec.label}</Text>
+        <View style={[styles.inputRow, error ? styles.inputRowError : null]}>
+          <TextInput
+            style={styles.inputInner}
+            keyboardType={keyboard}
+            value={raw}
+            onChangeText={(t) => setRaw(t)}
+            onBlur={() => {
+              const parsed = spec.type === 'int' ? parseInt(raw, 10) : parseFloat(raw);
+              onChange(parsed);
+            }}
+            placeholder={spec.default != null ? String(spec.default) : undefined}
+            placeholderTextColor={Colors.textTertiary}
+          />
+          {spec.unit ? <Text style={styles.inputUnit}>{spec.unit}</Text> : null}
+        </View>
+        {rangeHint ? <Text style={styles.rangeHint}>{rangeHint}</Text> : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
     );
@@ -90,42 +96,68 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
   // text
   return (
     <View>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={[styles.input, error ? styles.inputError : null]}
-        value={typeof value === 'string' ? value : ''}
-        onChangeText={(t) => onChange(t)}
-        placeholder={spec.default != null ? String(spec.default) : undefined}
-        placeholderTextColor='#bbb'
-      />
+      <Text style={styles.label}>{spec.label}</Text>
+      <View style={[styles.inputRow, error ? styles.inputRowError : null]}>
+        <TextInput
+          style={styles.inputInner}
+          value={typeof value === 'string' ? value : ''}
+          onChangeText={(t) => onChange(t)}
+          placeholder={spec.default != null ? String(spec.default) : undefined}
+          placeholderTextColor={Colors.textTertiary}
+        />
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600', color: '#3a2a1c', marginBottom: 6 },
-  input: {
+  label: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+    marginBottom: 6,
+    letterSpacing: 0.1,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#d6cbbe',
-    borderRadius: 8,
+    borderColor: Colors.border,
+    borderRadius: Radii.input,
+    backgroundColor: Colors.bgSurface,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    fontSize: 15,
-    color: '#3a2a1c',
-    backgroundColor: '#fff',
   },
-  inputError: { borderColor: '#b00020' },
+  inputRowError: { borderColor: Colors.destructive },
+  inputInner: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+  },
+  inputUnit: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+    marginLeft: 4,
+  },
+  rangeHint: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: Colors.textTertiary,
+    marginTop: 4,
+  },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#eaded2',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: Radii.chip,
+    backgroundColor: Colors.accentSubtle,
   },
-  chipActive: { backgroundColor: '#7a4a2b' },
-  chipText: { color: '#5a4636', fontWeight: '600', fontSize: 13 },
-  chipTextActive: { color: '#fff' },
-  error: { color: '#b00020', fontSize: 12, marginTop: 4 },
+  chipActive: { backgroundColor: Colors.accent },
+  chipText: { fontSize: 13, fontWeight: '500', color: Colors.textSecondary },
+  chipTextActive: { fontSize: 13, fontWeight: '600', color: Colors.bgSurface },
+  error: { color: Colors.destructive, fontSize: 12, marginTop: 4 },
 });
