@@ -112,7 +112,7 @@ export default function NewBrewScreen() {
     try {
       const { columns, paramsJson, doseG, waterG, ratio } = buildColumnsAndParams(values);
 
-      await db.insert(brews).values({
+      const result = await db.insert(brews).values({
         method,
         beanId: selectedBeanId ?? undefined,
         doseG,
@@ -132,7 +132,7 @@ export default function NewBrewScreen() {
         notes: notes.trim() || undefined,
       });
 
-      router.back();
+      router.replace(`/brew/${result.lastInsertRowId}`);
     } catch (err) {
       Alert.alert('Save failed', err instanceof Error ? err.message : String(err));
     } finally {

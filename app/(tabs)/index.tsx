@@ -48,8 +48,14 @@ export default function BrewsScreen() {
               {item.doseG ?? '–'} g · {item.waterG ?? '–'} g · {item.waterTempC ?? '–'} °C
               {' · '}grind {item.grindSetting ?? '–'}
             </Text>
-            {item.overallRating != null && (
+            {item.isPass === false && (
+              <Text style={styles.fail}>❌ Failed</Text>
+            )}
+            {item.isPass === true && item.overallRating != null && (
               <Text style={styles.score}>★ {item.overallRating} / 10</Text>
+            )}
+            {item.isPass === null && (
+              <Text style={styles.unrated}>Not rated</Text>
             )}
           </Pressable>
         )}
@@ -76,7 +82,9 @@ const styles = StyleSheet.create({
   beanName: { color: '#3a2a1c', fontWeight: '400' },
   dateText: { fontSize: 12, color: '#8a7a6c', marginLeft: 8 },
   paramsRow: { color: '#8a7a6c', fontSize: 13 },
-  score: { marginTop: 2, color: '#7a4a2b', fontWeight: '600', fontSize: 13 },
+  score:   { marginTop: 2, color: '#7a4a2b', fontWeight: '600', fontSize: 13 },
+  fail:    { marginTop: 2, color: '#c62828', fontWeight: '600', fontSize: 13 },
+  unrated: { marginTop: 2, color: '#bbb', fontSize: 12 },
   fab: {
     position: 'absolute',
     right: 16,
