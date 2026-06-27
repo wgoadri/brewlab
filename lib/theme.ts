@@ -1,6 +1,6 @@
 export const Colors = {
   // Page / surface
-  bgPage:        '#F7F5F2',
+  bgPage:        '#E8E5E1',
   bgSurface:     '#FFFFFF',
   bgElevated:    '#FFFFFF',
 
@@ -10,7 +10,7 @@ export const Colors = {
   textTertiary:  '#999592',
 
   // Borders
-  border:        '#E8E4DF',
+  border:        '#D4CFC8',
 
   // Accent (forest green — annotation ink, precision, craft)
   accent:        '#2D6A4F',

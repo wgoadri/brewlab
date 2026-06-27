@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
     gap: 4,
     marginBottom: Spacing.sm,
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: Colors.border,
   },
   cardTitle: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
