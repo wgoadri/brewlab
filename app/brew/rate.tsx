@@ -14,6 +14,7 @@ import {
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { METHODS, type BrewMethod } from '@/lib/methods';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -75,12 +76,12 @@ function ScoreRow({
 }
 
 const sr = StyleSheet.create({
-  row:         { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  circle:      { width: 30, height: 30, borderRadius: 15, backgroundColor: '#eaded2',
-                 alignItems: 'center', justifyContent: 'center' },
-  circleActive:{ backgroundColor: '#7a4a2b' },
-  num:         { fontSize: 12, fontWeight: '600', color: '#5a4636' },
-  numActive:   { color: '#fff' },
+  row:          { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  circle:       { width: 30, height: 30, borderRadius: 15, backgroundColor: Colors.accentSubtle,
+                  alignItems: 'center', justifyContent: 'center' },
+  circleActive: { backgroundColor: Colors.accent },
+  num:          { fontSize: 12, fontWeight: '500', color: Colors.textSecondary, fontVariant: ['tabular-nums'] },
+  numActive:    { color: Colors.bgSurface, fontWeight: '600' },
 });
 
 // ── Main screen ────────────────────────────────────────────────────────────────
@@ -96,21 +97,15 @@ export default function RateBrewScreen() {
     db.query.brews.findFirst({ where: eq(brews.id, brewId), with: { bean: true } })
   );
 
-  // Step state
-  const [step, setStep]           = useState<Step>('pass-fail');
-  const [passed, setPassed]       = useState<boolean | null>(null);
+  const [step, setStep]               = useState<Step>('pass-fail');
+  const [passed, setPassed]           = useState<boolean | null>(null);
   const [failReasons, setFailReasons] = useState<string[]>([]);
-  // Quick Score
-  const [enjoyment, setEnjoyment] = useState<number | null>(null);
-  const [harmony, setHarmony]     = useState<number | null>(null);
-  const [brewIntent, setBrewIntent] =
-    useState<'definitely-yes' | 'maybe' | 'no' | null>(null);
-  // Detailed
-  const [dimensions, setDimensions] = useState<Record<string, number>>({});
+  const [enjoyment, setEnjoyment]     = useState<number | null>(null);
+  const [harmony, setHarmony]         = useState<number | null>(null);
+  const [brewIntent, setBrewIntent]   = useState<'definitely-yes' | 'maybe' | 'no' | null>(null);
+  const [dimensions, setDimensions]   = useState<Record<string, number>>({});
   const [descriptors, setDescriptors] = useState<string[]>([]);
-  const [saving, setSaving]       = useState(false);
-
-  // ── helpers ──────────────────────────────────────────────────────────────────
+  const [saving, setSaving]           = useState(false);
 
   function toggleFailReason(reason: string) {
     setFailReasons(prev =>
@@ -152,23 +147,21 @@ export default function RateBrewScreen() {
     }
   }
 
-  // ── context card ─────────────────────────────────────────────────────────────
-
   const methodDef = brew ? METHODS[brew.method as BrewMethod] : null;
+
+  // ── Context card ─────────────────────────────────────────────────────────────
 
   const contextCard = (
     <View style={s.card}>
       <Text style={s.methodLabel}>{methodDef?.label ?? brew?.method ?? '…'}</Text>
-      <Text style={s.beanName}>
-        {brew?.bean ? brew.bean.name : 'No bean'}
-      </Text>
+      <Text style={s.beanName}>{brew?.bean ? brew.bean.name : 'No bean'}</Text>
       {brew?.brewedAt && (
-        <Text style={s.muted}>{brew.brewedAt.toLocaleDateString()}</Text>
+        <Text style={s.dateText}>{brew.brewedAt.toLocaleDateString()}</Text>
       )}
     </View>
   );
 
-  // ── step indicator ────────────────────────────────────────────────────────────
+  // ── Step indicator ────────────────────────────────────────────────────────────
 
   const stepNum = step === 'pass-fail' ? 1 : step === 'quick-score' ? 2 : 3;
   const stepIndicator = step !== 'detailed' && (
@@ -178,26 +171,26 @@ export default function RateBrewScreen() {
   // ── Pass/Fail step ────────────────────────────────────────────────────────────
 
   const passFail = (
-    <View style={{ gap: 12 }}>
-      <Text style={s.sectionTitle}>Is this cup acceptable?</Text>
+    <View style={{ gap: Spacing.md }}>
+      <Text style={s.sectionHeader}>Is this cup acceptable?</Text>
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <Pressable
           style={[s.gateBtn, s.passBtn, passed === true && s.passBtnActive]}
           onPress={() => { setPassed(true); setFailReasons([]); }}
         >
-          <Text style={[s.gateBtnText, s.passText]}>✅ Pass</Text>
+          <Text style={[s.gateBtnText, s.passText]}>Pass</Text>
         </Pressable>
         <Pressable
           style={[s.gateBtn, s.failBtn, passed === false && s.failBtnActive]}
           onPress={() => setPassed(false)}
         >
-          <Text style={[s.gateBtnText, s.failText]}>❌ Fail</Text>
+          <Text style={[s.gateBtnText, s.failText]}>Fail</Text>
         </Pressable>
       </View>
 
       {passed === false && (
-        <View style={{ gap: 8 }}>
-          <Text style={s.sectionTitle}>What went wrong?</Text>
+        <View style={{ gap: Spacing.sm }}>
+          <Text style={s.sectionHeader}>What went wrong?</Text>
           <View style={s.chipRow}>
             {FAIL_REASONS.map(r => (
               <Pressable
@@ -212,14 +205,14 @@ export default function RateBrewScreen() {
             ))}
           </View>
           <Pressable style={[s.primaryBtn, saving && s.btnDisabled]} onPress={() => save(false)} disabled={saving}>
-            <Text style={s.primaryBtnText}>Save fail →</Text>
+            <Text style={s.primaryBtnText}>Save</Text>
           </Pressable>
         </View>
       )}
 
       {passed === true && (
         <Pressable style={s.primaryBtn} onPress={() => setStep('quick-score')}>
-          <Text style={s.primaryBtnText}>Continue →</Text>
+          <Text style={s.primaryBtnText}>Continue</Text>
         </Pressable>
       )}
     </View>
@@ -228,20 +221,20 @@ export default function RateBrewScreen() {
   // ── Quick Score step ──────────────────────────────────────────────────────────
 
   const quickScore = (
-    <View style={{ gap: 12 }}>
-      <Text style={s.sectionTitle}>Overall Enjoyment (0–10)</Text>
+    <View style={{ gap: Spacing.md }}>
+      <Text style={s.sectionHeader}>Overall Enjoyment (0–10)</Text>
       <View style={s.card}>
         <ScoreRow max={10} value={enjoyment} onChange={setEnjoyment} />
         <Text style={s.hint}>0 = dislike extremely · 10 = like extremely</Text>
       </View>
 
-      <Text style={s.sectionTitle}>Harmony (0–5)</Text>
+      <Text style={s.sectionHeader}>Harmony (0–5)</Text>
       <View style={s.card}>
         <ScoreRow max={5} value={harmony} onChange={setHarmony} />
         <Text style={s.hint}>How balanced and integrated is the cup?</Text>
       </View>
 
-      <Text style={s.sectionTitle}>Brew Intent</Text>
+      <Text style={s.sectionHeader}>Brew Intent</Text>
       <View style={s.chipRow}>
         {(['definitely-yes', 'maybe', 'no'] as const).map(val => {
           const labels: Record<string, string> = {
@@ -263,20 +256,20 @@ export default function RateBrewScreen() {
         })}
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: Spacing.sm }}>
         <Pressable
           style={[s.primaryBtn, { flex: 1 }, (enjoyment == null || saving) && s.btnDisabled]}
           disabled={enjoyment == null || saving}
           onPress={() => save(false)}
         >
-          <Text style={s.primaryBtnText}>Save →</Text>
+          <Text style={s.primaryBtnText}>Save</Text>
         </Pressable>
         <Pressable
           style={[s.secondaryBtn, { flex: 1 }, enjoyment == null && s.btnDisabled]}
           disabled={enjoyment == null}
           onPress={() => setStep('detailed')}
         >
-          <Text style={s.secondaryBtnText}>Add detail →</Text>
+          <Text style={s.secondaryBtnText}>Add detail</Text>
         </Pressable>
       </View>
     </View>
@@ -285,24 +278,26 @@ export default function RateBrewScreen() {
   // ── Detailed step ─────────────────────────────────────────────────────────────
 
   const detailed = (
-    <View style={{ gap: 12 }}>
-      <Text style={s.sectionTitle}>Sensory Dimensions</Text>
-      <View style={s.card}>
+    <View style={{ gap: Spacing.md }}>
+      <Text style={s.sectionHeader}>Sensory Dimensions</Text>
+      <View style={[s.card, { paddingVertical: 0 }]}>
         {SENSORY_DIMS.map((dim, idx) => (
           <View key={dim.key}>
             {idx > 0 && <View style={s.divider} />}
-            <Text style={s.dimLabel}>{dim.label}</Text>
-            <Text style={s.hint}>{dim.hint}</Text>
-            <ScoreRow
-              max={10}
-              value={dimensions[dim.key] ?? null}
-              onChange={v => setDimensions(d => ({ ...d, [dim.key]: v }))}
-            />
+            <View style={{ paddingVertical: Spacing.md }}>
+              <Text style={s.dimLabel}>{dim.label}</Text>
+              <Text style={s.hint}>{dim.hint}</Text>
+              <ScoreRow
+                max={10}
+                value={dimensions[dim.key] ?? null}
+                onChange={v => setDimensions(d => ({ ...d, [dim.key]: v }))}
+              />
+            </View>
           </View>
         ))}
       </View>
 
-      <Text style={s.sectionTitle}>Descriptors</Text>
+      <Text style={s.sectionHeader}>Descriptors</Text>
       <View style={s.card}>
         {DESCRIPTOR_GROUPS.map(group => (
           <View key={group.label} style={{ marginBottom: 10 }}>
@@ -329,15 +324,15 @@ export default function RateBrewScreen() {
         disabled={saving}
         onPress={() => save(true)}
       >
-        <Text style={s.primaryBtnText}>Save with detail →</Text>
+        <Text style={s.primaryBtnText}>Save</Text>
       </Pressable>
     </View>
   );
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#fbf7f2' }}
-      contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}
+      style={{ flex: 1, backgroundColor: Colors.bgPage }}
+      contentContainerStyle={{ padding: Spacing.base, paddingBottom: Spacing.xxxl, gap: Spacing.md }}
     >
       {contextCard}
       {stepIndicator}
@@ -351,37 +346,42 @@ export default function RateBrewScreen() {
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  card:          { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 6 },
-  methodLabel:   { fontSize: 18, fontWeight: '700', color: '#3a2a1c' },
-  beanName:      { fontSize: 14, color: '#8a7a6c' },
-  muted:         { color: '#8a7a6c', fontSize: 13 },
-  hint:          { color: '#8a7a6c', fontSize: 12, marginBottom: 6 },
-  stepIndicator: { color: '#8a7a6c', fontSize: 13, textAlign: 'center' },
-  sectionTitle:  { fontSize: 16, fontWeight: '700', color: '#3a2a1c', marginTop: 12, marginBottom: 4 },
-  dimLabel:      { fontSize: 14, fontWeight: '600', color: '#3a2a1c', marginBottom: 2, marginTop: 6 },
-  groupLabel:    { fontSize: 11, fontWeight: '700', color: '#8a7a6c', letterSpacing: 0.8, marginBottom: 6 },
-  divider:       { height: 1, backgroundColor: '#f0e8de', marginVertical: 10 },
-  chipRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:          { backgroundColor: '#eaded2', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
-  chipActive:    { backgroundColor: '#7a4a2b' },
-  chipText:      { fontSize: 13, color: '#5a4636' },
-  chipTextActive:{ color: '#fff' },
-  // Pass/Fail gate buttons
-  gateBtn:       { flex: 1, borderRadius: 14, paddingVertical: 20, alignItems: 'center',
-                   justifyContent: 'center', borderWidth: 2 },
-  passBtn:       { borderColor: '#2e7d32', backgroundColor: '#fff' },
-  passBtnActive: { backgroundColor: '#e8f5e9' },
-  failBtn:       { borderColor: '#c62828', backgroundColor: '#fff' },
-  failBtnActive: { backgroundColor: '#ffebee' },
-  gateBtnText:   { fontSize: 16, fontWeight: '700' },
-  passText:      { color: '#2e7d32' },
-  failText:      { color: '#c62828' },
-  // Action buttons
-  primaryBtn:    { backgroundColor: '#7a4a2b', borderRadius: 10, paddingVertical: 14,
-                   alignItems: 'center' },
-  primaryBtnText:{ color: '#fff', fontWeight: '700', fontSize: 15 },
-  secondaryBtn:  { borderWidth: 2, borderColor: '#7a4a2b', borderRadius: 10, paddingVertical: 14,
-                   alignItems: 'center' },
-  secondaryBtnText: { color: '#7a4a2b', fontWeight: '700', fontSize: 15 },
-  btnDisabled:   { opacity: 0.4 },
+  card:         { backgroundColor: Colors.bgSurface, borderRadius: Radii.card, padding: Spacing.base, gap: 6 },
+  methodLabel:  { fontSize: 17, fontWeight: '600', color: Colors.textPrimary },
+  beanName:     { fontSize: 14, color: Colors.textSecondary },
+  dateText:     { fontSize: 12, color: Colors.textTertiary, fontVariant: ['tabular-nums'] },
+  hint:         { color: Colors.textTertiary, fontSize: 12, fontStyle: 'italic', marginBottom: 6 },
+  stepIndicator:{
+    fontSize: 11, fontWeight: '500', color: Colors.textTertiary,
+    letterSpacing: 0.8, textTransform: 'uppercase', textAlign: 'center',
+  },
+  sectionHeader:{
+    fontSize: 11, fontWeight: '500', color: Colors.textTertiary,
+    letterSpacing: 0.8, textTransform: 'uppercase',
+    paddingHorizontal: 4,
+  },
+  dimLabel:     { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: 2 },
+  groupLabel:   { fontSize: 11, fontWeight: '500', color: Colors.textTertiary, letterSpacing: 0.8, marginBottom: 6 },
+  divider:      { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border },
+  chipRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip:         { backgroundColor: Colors.accentSubtle, borderRadius: Radii.chip, paddingHorizontal: 12, paddingVertical: 7 },
+  chipActive:   { backgroundColor: Colors.accent },
+  chipText:     { fontSize: 13, fontWeight: '500', color: Colors.textSecondary },
+  chipTextActive:{ color: Colors.bgSurface, fontWeight: '600' },
+  gateBtn:      { flex: 1, borderRadius: Radii.card, paddingVertical: 20, alignItems: 'center',
+                  justifyContent: 'center', borderWidth: 1.5 },
+  passBtn:      { borderColor: Colors.accent, backgroundColor: Colors.bgSurface },
+  passBtnActive:{ backgroundColor: Colors.accentSubtle },
+  failBtn:      { borderColor: Colors.destructive, backgroundColor: Colors.bgSurface },
+  failBtnActive:{ backgroundColor: 'rgba(185, 28, 28, 0.08)' },
+  gateBtnText:  { fontSize: 16, fontWeight: '600' },
+  passText:     { color: Colors.accent },
+  failText:     { color: Colors.destructive },
+  primaryBtn:   { backgroundColor: Colors.accent, borderRadius: Radii.button, paddingVertical: 16,
+                  alignItems: 'center' },
+  primaryBtnText:{ color: Colors.bgSurface, fontWeight: '600', fontSize: 15, letterSpacing: 0.2 },
+  secondaryBtn: { borderWidth: 1.5, borderColor: Colors.accent, borderRadius: Radii.button,
+                  paddingVertical: 16, alignItems: 'center', backgroundColor: 'transparent' },
+  secondaryBtnText:{ color: Colors.accent, fontWeight: '600', fontSize: 15, letterSpacing: 0.2 },
+  btnDisabled:  { opacity: 0.4 },
 });

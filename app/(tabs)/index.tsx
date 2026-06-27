@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { METHODS, type BrewMethod } from '@/lib/methods';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 
 export default function BrewsScreen() {
   const router = useRouter();
@@ -36,9 +37,7 @@ export default function BrewsScreen() {
                 {METHODS[item.method as BrewMethod]?.label ?? item.method}
                 {item.bean ? (
                   <Text style={styles.beanName}> · {item.bean.name}</Text>
-                ) : (
-                  <Text style={styles.muted}> · No bean</Text>
-                )}
+                ) : null}
               </Text>
               <Text style={styles.dateText}>
                 {item.brewedAt.toLocaleDateString()}
@@ -49,13 +48,13 @@ export default function BrewsScreen() {
               {' · '}grind {item.grindSetting ?? '–'}
             </Text>
             {item.isPass === false && (
-              <Text style={styles.fail}>❌ Failed</Text>
+              <Text style={styles.fail}>Failed</Text>
             )}
             {item.isPass === true && item.overallRating != null && (
-              <Text style={styles.score}>★ {item.overallRating} / 10</Text>
+              <Text style={styles.score}>{item.overallRating}</Text>
             )}
             {item.isPass === null && (
-              <Text style={styles.unrated}>Not rated</Text>
+              <Text style={styles.unrated}>Tap to rate</Text>
             )}
           </Pressable>
         )}
@@ -63,7 +62,7 @@ export default function BrewsScreen() {
 
       <Link href="/brew/new" asChild>
         <Pressable style={styles.fab}>
-          <Text style={styles.fabText}>+  New brew</Text>
+          <Text style={styles.fabText}>New brew</Text>
         </Pressable>
       </Link>
     </SafeAreaView>
@@ -71,28 +70,35 @@ export default function BrewsScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fbf7f2' },
-  list: { padding: 16, gap: 12 },
+  flex: { flex: 1, backgroundColor: Colors.bgPage },
+  list: { padding: Spacing.base, gap: Spacing.sm },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 24 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#3a2a1c' },
-  muted: { color: '#8a7a6c' },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 4, marginBottom: 12 },
-  cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#3a2a1c', flex: 1, flexShrink: 1 },
-  beanName: { color: '#3a2a1c', fontWeight: '400' },
-  dateText: { fontSize: 12, color: '#8a7a6c', marginLeft: 8 },
-  paramsRow: { color: '#8a7a6c', fontSize: 13 },
-  score:   { marginTop: 2, color: '#7a4a2b', fontWeight: '600', fontSize: 13 },
-  fail:    { marginTop: 2, color: '#c62828', fontWeight: '600', fontSize: 13 },
-  unrated: { marginTop: 2, color: '#bbb', fontSize: 12 },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: Colors.textPrimary },
+  muted: { color: Colors.textSecondary },
+  card: {
+    backgroundColor: Colors.bgSurface,
+    borderRadius: Radii.card,
+    padding: Spacing.base,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+    marginBottom: Spacing.sm,
+  },
+  cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, flex: 1, flexShrink: 1 },
+  beanName: { color: Colors.textSecondary, fontWeight: '400' },
+  dateText: { fontSize: 12, color: Colors.textTertiary, marginLeft: 8, fontVariant: ['tabular-nums'] },
+  paramsRow: { color: Colors.textSecondary, fontSize: 13, fontVariant: ['tabular-nums'], marginBottom: 2 },
+  score:   { marginTop: 4, color: Colors.accent, fontWeight: '600', fontSize: 15, fontVariant: ['tabular-nums'] },
+  fail:    { marginTop: 4, color: Colors.destructive, fontWeight: '500', fontSize: 13 },
+  unrated: { marginTop: 4, color: Colors.textTertiary, fontSize: 12 },
   fab: {
     position: 'absolute',
-    right: 16,
+    right: 20,
     bottom: 24,
-    backgroundColor: '#7a4a2b',
+    backgroundColor: Colors.accent,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: 28,
+    borderRadius: Radii.fab,
   },
-  fabText: { color: '#fff', fontWeight: '700' },
+  fabText: { color: Colors.bgSurface, fontWeight: '600', fontSize: 15, letterSpacing: 0.2 },
 });

@@ -21,6 +21,7 @@ import { beans, brews, grinders } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { setPendingBrew } from '@/lib/brewDraft';
 import { ParamInput } from '@/components/ParamInput';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 
 // ── Zod schema builder ──────────────────────────────────────────────────────
 
@@ -33,9 +34,7 @@ function buildSchema(params: ParamSpec[]): z.ZodObject<Record<string, z.ZodTypeA
       if (spec.max != null) s = s.max(spec.max);
       shape[spec.key] = s.optional();
     } else if (spec.type === 'enum' && spec.options && spec.options.length > 0) {
-      shape[spec.key] = z
-        .enum(spec.options as [string, ...string[]])
-        .optional();
+      shape[spec.key] = z.enum(spec.options as [string, ...string[]]).optional();
     } else if (spec.type === 'boolean') {
       shape[spec.key] = z.boolean().optional();
     } else {
@@ -67,7 +66,6 @@ export default function NewBrewScreen() {
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(grinders.name));
 
   const params = METHODS[method].params;
-
   const schema = useMemo(() => buildSchema(params), [params]);
   const defaultValues = useMemo(() => buildDefaults(params), [params]);
 
@@ -173,7 +171,7 @@ export default function NewBrewScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       {/* Method */}
-      <Text style={styles.sectionTitle}>Method</Text>
+      <Text style={styles.sectionHeader}>Method</Text>
       <View style={styles.card}>
         <View style={styles.chipRow}>
           {METHOD_LIST.map((m) => (
@@ -191,7 +189,7 @@ export default function NewBrewScreen() {
       </View>
 
       {/* Bean */}
-      <Text style={styles.sectionTitle}>Bean</Text>
+      <Text style={styles.sectionHeader}>Bean</Text>
       <View style={styles.card}>
         {beanList && beanList.length > 0 ? (
           <View style={styles.chipRow}>
@@ -221,7 +219,7 @@ export default function NewBrewScreen() {
       </View>
 
       {/* Grinder */}
-      <Text style={styles.sectionTitle}>Grinder</Text>
+      <Text style={styles.sectionHeader}>Grinder</Text>
       <View style={styles.card}>
         {grinderList && grinderList.length > 0 ? (
           <View style={styles.chipRow}>
@@ -251,8 +249,8 @@ export default function NewBrewScreen() {
       </View>
 
       {/* Parameters */}
-      <Text style={styles.sectionTitle}>Parameters</Text>
-      <View style={styles.card}>
+      <Text style={styles.sectionHeader}>Parameters</Text>
+      <View style={[styles.card, { gap: 0 }]}>
         {params.map((spec, idx) => (
           <View key={spec.key} style={idx > 0 ? styles.paramSep : undefined}>
             <Controller
@@ -272,7 +270,7 @@ export default function NewBrewScreen() {
       </View>
 
       {/* Notes */}
-      <Text style={styles.sectionTitle}>Notes</Text>
+      <Text style={styles.sectionHeader}>Notes</Text>
       <View style={styles.card}>
         <TextInput
           style={styles.notesInput}
@@ -281,70 +279,53 @@ export default function NewBrewScreen() {
           value={notes}
           onChangeText={setNotes}
           placeholder='Any observations about this brew…'
-          placeholderTextColor='#bbb'
+          placeholderTextColor={Colors.textTertiary}
           textAlignVertical='top'
         />
       </View>
 
-      {/* Primary CTA */}
-      <Pressable style={styles.saveBtn} onPress={onStart} disabled={saving}>
+      {/* CTAs */}
+      <Pressable style={[styles.primaryBtn, saving && styles.btnDisabled]} onPress={onStart} disabled={saving}>
         {saving ? (
-          <ActivityIndicator color='#fff' />
+          <ActivityIndicator color={Colors.bgSurface} />
         ) : (
-          <Text style={styles.saveBtnText}>Start brew →</Text>
+          <Text style={styles.primaryBtnText}>Start brew</Text>
         )}
       </Pressable>
 
-      {/* Secondary fallback */}
-      <Pressable onPress={onSaveNow} disabled={saving} style={styles.skipTimerBtn}>
-        <Text style={styles.skipTimerText}>Save without timer</Text>
+      <Pressable onPress={onSaveNow} disabled={saving} style={[styles.secondaryBtn, { marginTop: Spacing.md }]}>
+        <Text style={styles.secondaryBtnText}>Save without timer</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#fbf7f2' },
-  content: { padding: 16, paddingBottom: 40, gap: 8 },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3a2a1c',
-    marginTop: 12,
-    marginBottom: 4,
+  scroll: { flex: 1, backgroundColor: Colors.bgPage },
+  content: { padding: Spacing.base, paddingBottom: Spacing.xxxl, gap: 0 },
+  sectionHeader: {
+    fontSize: 11, fontWeight: '500', color: Colors.textTertiary,
+    letterSpacing: 0.8, textTransform: 'uppercase',
+    marginBottom: Spacing.sm, marginTop: Spacing.lg, paddingHorizontal: 4,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
-    gap: 14,
+  card: { backgroundColor: Colors.bgSurface, borderRadius: Radii.card, padding: Spacing.base, gap: Spacing.md },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: Radii.chip, backgroundColor: Colors.accentSubtle },
+  chipActive: { backgroundColor: Colors.accent },
+  chipText: { color: Colors.textSecondary, fontWeight: '500', fontSize: 13 },
+  chipTextActive: { color: Colors.bgSurface, fontWeight: '600', fontSize: 13 },
+  paramSep: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border, paddingTop: Spacing.md, marginTop: Spacing.md },
+  muted: { color: Colors.textSecondary, fontSize: 14 },
+  notesInput: { minHeight: 80, fontSize: 15, color: Colors.textPrimary, lineHeight: 22 },
+  primaryBtn: {
+    marginTop: Spacing.xxl, backgroundColor: Colors.accent, borderRadius: Radii.button,
+    paddingVertical: 16, alignItems: 'center',
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#eaded2',
+  primaryBtnText: { color: Colors.bgSurface, fontSize: 16, fontWeight: '600', letterSpacing: 0.2 },
+  secondaryBtn: {
+    borderWidth: 1.5, borderColor: Colors.accent, borderRadius: Radii.button,
+    paddingVertical: 16, alignItems: 'center', backgroundColor: 'transparent',
   },
-  chipActive: { backgroundColor: '#7a4a2b' },
-  chipText: { color: '#5a4636', fontWeight: '600', fontSize: 13 },
-  chipTextActive: { color: '#fff' },
-  paramSep: { borderTopWidth: 1, borderTopColor: '#f0e8de', paddingTop: 14 },
-  muted: { color: '#8a7a6c', fontSize: 14 },
-  notesInput: {
-    minHeight: 80,
-    fontSize: 15,
-    color: '#3a2a1c',
-    lineHeight: 22,
-  },
-  saveBtn: {
-    marginTop: 16,
-    backgroundColor: '#7a4a2b',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  skipTimerBtn: { alignItems: 'center', paddingVertical: 12 },
-  skipTimerText: { color: '#8a7a6c', fontSize: 14 },
+  secondaryBtnText: { color: Colors.accent, fontSize: 16, fontWeight: '600', letterSpacing: 0.2 },
+  btnDisabled: { opacity: 0.4 },
 });

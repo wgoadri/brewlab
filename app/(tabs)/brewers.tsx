@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '@/db/client';
 import { brewers, grinders } from '@/db/schema';
 import { METHODS, type BrewMethod } from '@/lib/methods';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 
 export default function GearScreen() {
   const router = useRouter();
@@ -18,11 +19,9 @@ export default function GearScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Brewers */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Brewers</Text>
+          <Text style={styles.sectionLabel}>Brewers</Text>
           <Link href="/brewers/new" asChild>
-            <Pressable style={styles.addBtn}>
-              <Text style={styles.addBtnText}>+ Add</Text>
-            </Pressable>
+            <Pressable><Text style={styles.addLink}>Add</Text></Pressable>
           </Link>
         </View>
         {brewerList && brewerList.length > 0 ? (
@@ -42,12 +41,10 @@ export default function GearScreen() {
         )}
 
         {/* Grinders */}
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionTitle}>Grinders</Text>
+        <View style={[styles.sectionHeader, { marginTop: Spacing.xxl }]}>
+          <Text style={styles.sectionLabel}>Grinders</Text>
           <Link href="/grinders/new" asChild>
-            <Pressable style={styles.addBtn}>
-              <Text style={styles.addBtnText}>+ Add</Text>
-            </Pressable>
+            <Pressable><Text style={styles.addLink}>Add</Text></Pressable>
           </Link>
         </View>
         {grinderList && grinderList.length > 0 ? (
@@ -73,24 +70,32 @@ export default function GearScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fbf7f2' },
-  content: { padding: 16, paddingBottom: 40 },
+  flex: { flex: 1, backgroundColor: Colors.bgPage },
+  content: { padding: Spacing.base, paddingBottom: Spacing.xxxl },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: Spacing.sm,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#3a2a1c' },
-  addBtn: {
-    backgroundColor: '#7a4a2b',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: Colors.textTertiary,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
-  addBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 4, marginBottom: 10 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#3a2a1c' },
-  muted: { color: '#8a7a6c', fontSize: 13 },
-  empty: { paddingVertical: 12 },
+  addLink: { fontSize: 14, fontWeight: '500', color: Colors.accent },
+  card: {
+    backgroundColor: Colors.bgSurface,
+    borderRadius: Radii.card,
+    padding: Spacing.base,
+    gap: 4,
+    marginBottom: Spacing.sm,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+  },
+  cardTitle: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
+  muted: { color: Colors.textSecondary, fontSize: 13 },
+  empty: { paddingVertical: Spacing.sm },
 });

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db } from '@/db/client';
 import { beans } from '@/db/schema';
+import { Colors, Radii, Spacing } from '@/lib/theme';
 
 export default function BeansScreen() {
   const router = useRouter();
@@ -29,14 +30,16 @@ export default function BeansScreen() {
             <Text style={styles.muted}>
               {[item.roaster, item.origin, item.process].filter(Boolean).join(' · ') || 'No details yet'}
             </Text>
-            {item.rating != null && <Text style={styles.score}>★ {item.rating}/10</Text>}
+            {item.rating != null && (
+              <Text style={styles.score}>{item.rating}</Text>
+            )}
           </Pressable>
         )}
       />
 
       <Link href="/beans/new" asChild>
         <Pressable style={styles.fab}>
-          <Text style={styles.fabText}>+  Add bean</Text>
+          <Text style={styles.fabText}>Add bean</Text>
         </Pressable>
       </Link>
     </SafeAreaView>
@@ -44,22 +47,30 @@ export default function BeansScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fbf7f2' },
-  list: { padding: 16 },
+  flex: { flex: 1, backgroundColor: Colors.bgPage },
+  list: { padding: Spacing.base },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 24 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#3a2a1c' },
-  muted: { color: '#8a7a6c' },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 4, marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#3a2a1c' },
-  score: { marginTop: 4, color: '#7a4a2b', fontWeight: '600' },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: Colors.textPrimary },
+  muted: { color: Colors.textSecondary, fontSize: 13 },
+  card: {
+    backgroundColor: Colors.bgSurface,
+    borderRadius: Radii.card,
+    padding: Spacing.base,
+    gap: 4,
+    marginBottom: Spacing.sm,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+  },
+  cardTitle: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
+  score: { marginTop: 4, color: Colors.accent, fontWeight: '600', fontSize: 14, fontVariant: ['tabular-nums'] },
   fab: {
     position: 'absolute',
-    right: 16,
+    right: 20,
     bottom: 24,
-    backgroundColor: '#7a4a2b',
+    backgroundColor: Colors.accent,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: 28,
+    borderRadius: Radii.fab,
   },
-  fabText: { color: '#fff', fontWeight: '700' },
+  fabText: { color: Colors.bgSurface, fontWeight: '600', fontSize: 15, letterSpacing: 0.2 },
 });
