@@ -50,6 +50,7 @@ export interface MethodDef {
   icon?: string; // @expo/vector-icons name, fill in when building UI
   params: ParamSpec[];
   defaultSteps: BrewStepTemplate[];
+  timerMode: 'guided' | 'freeform';
 }
 
 // Reusable common params (kept consistent across methods) ----------------------
@@ -83,6 +84,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   aeropress: {
     id: 'aeropress',
     label: 'AeroPress',
+    timerMode: 'guided',
     params: [
       dose(15), water(240), grind, temp(85), totalTime(120),
       { key: 'orientation', label: 'Orientation', type: 'enum', options: ['standard', 'inverted'], default: 'inverted', optimizable: true },
@@ -102,6 +104,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   v60: {
     id: 'v60',
     label: 'Hario V60',
+    timerMode: 'guided',
     params: [
       dose(15), water(250), grind, temp(94), totalTime(165), ...bloom,
       { key: 'pours', label: 'Number of pours', type: 'int', min: 1, max: 6, step: 1, default: 3, optimizable: true },
@@ -117,6 +120,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   chemex: {
     id: 'chemex',
     label: 'Chemex',
+    timerMode: 'guided',
     params: [dose(30), water(500), grind, temp(94), totalTime(240), ...bloom],
     defaultSteps: [
       { label: 'Bloom', durationSec: 45 },
@@ -128,6 +132,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   kalita: {
     id: 'kalita',
     label: 'Kalita Wave',
+    timerMode: 'guided',
     params: [dose(20), water(320), grind, temp(93), totalTime(180), ...bloom],
     defaultSteps: [
       { label: 'Bloom', durationSec: 30 },
@@ -139,6 +144,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   frenchpress: {
     id: 'frenchpress',
     label: 'French Press',
+    timerMode: 'guided',
     params: [
       dose(30), water(500), grind, temp(94),
       { key: 'steepTimeS', label: 'Steep time', type: 'int', unit: 's', min: 60, max: 900, step: 10, default: 240, optimizable: true },
@@ -153,6 +159,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   espresso: {
     id: 'espresso',
     label: 'Espresso',
+    timerMode: 'freeform',
     params: [
       dose(18), grind, temp(93),
       { key: 'yieldG', label: 'Yield (out)', type: 'number', unit: 'g', min: 15, max: 60, step: 0.5, default: 36, optimizable: true },
@@ -170,6 +177,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   moka: {
     id: 'moka',
     label: 'Moka Pot',
+    timerMode: 'freeform',
     params: [
       dose(18), water(200), grind, temp(100),
       { key: 'heatLevel', label: 'Heat', type: 'enum', options: ['low', 'medium', 'high'], default: 'medium', optimizable: true },
@@ -183,6 +191,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
   switch: {
     id: 'switch',
     label: 'Hario Switch',
+    timerMode: 'guided',
     params: [
       dose(15), water(250), grind, temp(92), totalTime(180), ...bloom,
       { key: 'steepTimeS', label: 'Steep (closed)', type: 'int', unit: 's', min: 0, max: 300, step: 5, default: 60, optimizable: true },

@@ -19,6 +19,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { db } from '@/db/client';
 import { beans, brews } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
+import { setPendingBrew } from '@/lib/brewDraft';
 import { ParamInput } from '@/components/ParamInput';
 
 // ── Zod schema builder ──────────────────────────────────────────────────────
@@ -79,32 +80,44 @@ export default function NewBrewScreen() {
     reset(buildDefaults(METHODS[method].params));
   }, [method, reset]);
 
-  const onSave = handleSubmit(async (values: FormValues) => {
+  function buildColumnsAndParams(values: FormValues): {
+    columns: Record<string, number | string | boolean | undefined>;
+    paramsJson: Record<string, number | string | boolean>;
+    doseG: number | undefined;
+    waterG: number | undefined;
+    ratio: number | undefined;
+  } {
+    const columns: Record<string, number | string | boolean | undefined> = {};
+    const paramsJson: Record<string, number | string | boolean> = {};
+
+    for (const spec of params) {
+      const val = values[spec.key];
+      if (val == null) continue;
+      if (spec.column) {
+        columns[spec.column] = val;
+      } else {
+        paramsJson[spec.key] = val as number | string | boolean;
+      }
+    }
+
+    const doseG = typeof columns['doseG'] === 'number' ? columns['doseG'] : undefined;
+    const waterG = typeof columns['waterG'] === 'number' ? columns['waterG'] : undefined;
+    const ratio = doseG != null && waterG != null && doseG > 0 ? waterG / doseG : undefined;
+
+    return { columns, paramsJson, doseG, waterG, ratio };
+  }
+
+  const onSaveNow = handleSubmit(async (values: FormValues) => {
     setSaving(true);
     try {
-      const columns: Record<string, number | string | boolean | undefined> = {};
-      const paramsJson: Record<string, number | string | boolean> = {};
-
-      for (const spec of params) {
-        const val = values[spec.key];
-        if (val == null) continue;
-        if (spec.column) {
-          columns[spec.column] = val;
-        } else {
-          paramsJson[spec.key] = val as number | string | boolean;
-        }
-      }
-
-      const doseG = typeof columns['doseG'] === 'number' ? columns['doseG'] : undefined;
-      const waterG = typeof columns['waterG'] === 'number' ? columns['waterG'] : undefined;
-      const ratio = doseG != null && waterG != null && doseG > 0 ? waterG / doseG : undefined;
+      const { columns, paramsJson, doseG, waterG, ratio } = buildColumnsAndParams(values);
 
       await db.insert(brews).values({
         method,
         beanId: selectedBeanId ?? undefined,
-        doseG: doseG,
-        waterG: waterG,
-        ratio: ratio,
+        doseG,
+        waterG,
+        ratio,
         grindSetting:
           typeof columns['grindSetting'] === 'number' ? columns['grindSetting'] : undefined,
         waterTempC:
@@ -125,6 +138,32 @@ export default function NewBrewScreen() {
     } finally {
       setSaving(false);
     }
+  });
+
+  const onStart = handleSubmit(async (values: FormValues) => {
+    const { columns, paramsJson, doseG, waterG, ratio } = buildColumnsAndParams(values);
+
+    setPendingBrew({
+      method,
+      beanId: selectedBeanId ?? undefined,
+      doseG,
+      waterG,
+      ratio,
+      grindSetting:
+        typeof columns['grindSetting'] === 'number' ? columns['grindSetting'] : undefined,
+      waterTempC:
+        typeof columns['waterTempC'] === 'number' ? columns['waterTempC'] : undefined,
+      totalTimeS:
+        typeof columns['totalTimeS'] === 'number' ? Math.round(columns['totalTimeS']) : undefined,
+      bloomWaterG:
+        typeof columns['bloomWaterG'] === 'number' ? columns['bloomWaterG'] : undefined,
+      bloomTimeS:
+        typeof columns['bloomTimeS'] === 'number' ? Math.round(columns['bloomTimeS']) : undefined,
+      paramsJson: Object.keys(paramsJson).length > 0 ? paramsJson : undefined,
+      notes: notes.trim() || undefined,
+    });
+
+    router.push('/brew/timer');
   });
 
   return (
@@ -213,13 +252,18 @@ export default function NewBrewScreen() {
         />
       </View>
 
-      {/* Save */}
-      <Pressable style={styles.saveBtn} onPress={onSave} disabled={saving}>
+      {/* Primary CTA */}
+      <Pressable style={styles.saveBtn} onPress={onStart} disabled={saving}>
         {saving ? (
           <ActivityIndicator color='#fff' />
         ) : (
-          <Text style={styles.saveBtnText}>Save brew</Text>
+          <Text style={styles.saveBtnText}>Start brew →</Text>
         )}
+      </Pressable>
+
+      {/* Secondary fallback */}
+      <Pressable onPress={onSaveNow} disabled={saving} style={styles.skipTimerBtn}>
+        <Text style={styles.skipTimerText}>Save without timer</Text>
       </Pressable>
     </ScrollView>
   );
@@ -267,4 +311,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  skipTimerBtn: { alignItems: 'center', paddingVertical: 12 },
+  skipTimerText: { color: '#8a7a6c', fontSize: 14 },
 });
