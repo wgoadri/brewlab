@@ -17,7 +17,7 @@ import * as z from 'zod';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 
 import { db } from '@/db/client';
-import { beans, brews } from '@/db/schema';
+import { beans, brews, grinders } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { setPendingBrew } from '@/lib/brewDraft';
 import { ParamInput } from '@/components/ParamInput';
@@ -61,8 +61,10 @@ export default function NewBrewScreen() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState('');
   const [selectedBeanId, setSelectedBeanId] = useState<number | null>(null);
+  const [selectedGrinderId, setSelectedGrinderId] = useState<number | null>(null);
 
   const { data: beanList } = useLiveQuery(db.select().from(beans).orderBy(beans.name));
+  const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(grinders.name));
 
   const params = METHODS[method].params;
 
@@ -115,6 +117,7 @@ export default function NewBrewScreen() {
       const result = await db.insert(brews).values({
         method,
         beanId: selectedBeanId ?? undefined,
+        grinderId: selectedGrinderId ?? undefined,
         doseG,
         waterG,
         ratio,
@@ -146,6 +149,7 @@ export default function NewBrewScreen() {
     setPendingBrew({
       method,
       beanId: selectedBeanId ?? undefined,
+      grinderId: selectedGrinderId ?? undefined,
       doseG,
       waterG,
       ratio,
@@ -213,6 +217,36 @@ export default function NewBrewScreen() {
           </View>
         ) : (
           <Text style={styles.muted}>No beans yet — add some in the Beans tab.</Text>
+        )}
+      </View>
+
+      {/* Grinder */}
+      <Text style={styles.sectionTitle}>Grinder</Text>
+      <View style={styles.card}>
+        {grinderList && grinderList.length > 0 ? (
+          <View style={styles.chipRow}>
+            <Pressable
+              onPress={() => setSelectedGrinderId(null)}
+              style={[styles.chip, selectedGrinderId === null && styles.chipActive]}
+            >
+              <Text style={[styles.chipText, selectedGrinderId === null && styles.chipTextActive]}>
+                None
+              </Text>
+            </Pressable>
+            {grinderList.map((g) => (
+              <Pressable
+                key={g.id}
+                onPress={() => setSelectedGrinderId(g.id)}
+                style={[styles.chip, selectedGrinderId === g.id && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, selectedGrinderId === g.id && styles.chipTextActive]}>
+                  {g.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.muted}>No grinders yet — add some in the Gear tab.</Text>
         )}
       </View>
 

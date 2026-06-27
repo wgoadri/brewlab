@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { desc } from 'drizzle-orm';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +8,7 @@ import { db } from '@/db/client';
 import { beans } from '@/db/schema';
 
 export default function BeansScreen() {
+  const router = useRouter();
   const { data } = useLiveQuery(db.select().from(beans).orderBy(desc(beans.createdAt)));
 
   return (
@@ -23,13 +24,13 @@ export default function BeansScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <Pressable style={styles.card} onPress={() => router.push(`/beans/${item.id}`)}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.muted}>
               {[item.roaster, item.origin, item.process].filter(Boolean).join(' · ') || 'No details yet'}
             </Text>
             {item.rating != null && <Text style={styles.score}>★ {item.rating}/10</Text>}
-          </View>
+          </Pressable>
         )}
       />
 
