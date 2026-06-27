@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "//": "bypassPermissions = no approval prompts. It runs as root because the container sets IS_SANDBOX=1. The deny list is still enforced even in bypass mode.",
+    "defaultMode": "bypassPermissions",
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(npm publish:*)"
+    ]
+  }
+}

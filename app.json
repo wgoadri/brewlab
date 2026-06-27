@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "brewlab",
+    "slug": "brewlab",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "brewlab",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

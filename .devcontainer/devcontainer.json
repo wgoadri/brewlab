@@ -1,0 +1,80 @@
+{
+  "name": "brewlab",
+
+  // Use Microsoft's Node dev container image directly — no custom Dockerfile.
+  // It already ships Node 24, git, zsh, the system libraries prebuilt binaries
+  // need, etc. The `4-` major is correct for javascript-node (`1-` does not exist).
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:4-24-bookworm",
+
+  // --- The one decision that ends the permission errors ---------------------
+  // Run as root. /workspace is bind-mounted from the host; on Windows drives
+  // every file in the container is owned by root, so a non-root user literally
+  // cannot write into /workspace (that was the EACCES on node_modules). Running
+  // as root removes the entire problem. root *inside* the container is NOT root
+  // on your machine — the container is still the isolation boundary.
+  "containerUser": "root",
+  "remoteUser": "root",
+
+  // Installs Claude Code (latest).
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+  // Persist only Claude auth + shell history across rebuilds.
+  "mounts": [
+    "source=brewlab-claude-${devcontainerId},target=/root/.claude,type=volume",
+    "source=brewlab-history-${devcontainerId},target=/root/.history,type=volume"
+  ],
+
+  "forwardPorts": [8081, 19000, 19001, 19002, 19006],
+  "portsAttributes": {
+    "8081":  { "label": "Metro bundler", "onAutoForward": "notify" },
+    "19000": { "label": "Expo Go",       "onAutoForward": "notify" },
+    "19006": { "label": "Expo web",      "onAutoForward": "notify" }
+  },
+
+  "containerEnv": {
+    "SHELL": "/usr/bin/zsh",
+    "HISTFILE": "/root/.history/.zsh_history",
+    "CLAUDE_CONFIG_DIR": "/root/.claude",
+    // We ARE in a real sandboxed container, so this lets Claude Code's
+    // bypass-permissions mode run as root (it otherwise refuses). This is what
+    // gives you prompt-free editing; the deny-list still applies on top.
+    "IS_SANDBOX": "1"
+  },
+
+  // Forward the host SSH agent so git fetch/clone can authenticate without
+  // copying a key in. Remove this line for stricter isolation.
+  "remoteEnv": { "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}" },
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "expo.vscode-expo-tools",
+        "msjsdiag.vscode-react-native",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "bradlc.vscode-tailwindcss",
+        "usernamehw.errorlens",
+        "pkief.material-icon-theme"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
+        "editor.rulers": [100],
+        "github.gitAuthentication": false,
+        "git.terminalAuthentication": false,
+        "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+      }
+    }
+  }
+}

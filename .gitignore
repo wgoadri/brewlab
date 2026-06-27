@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+ios/
+android/
+*.orig.*
+
+# Metro
+.metro-health-check*
+
+# Debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# macOS
+.DS_Store
+
+# Env / secrets
+.env*.local
+.env
+
+# Local SQLite artifacts (the on-device DB lives in app storage, but keep stray copies out)
+*.db
+*.db-shm
+*.db-wal
+
+# Drizzle: KEEP generated migrations under drizzle/ committed.
+# (Only ignore the local studio cache if it ever appears.)
+.drizzle/
+
+# devcontainer scratch
+.devcontainer/.env.devcontainer
