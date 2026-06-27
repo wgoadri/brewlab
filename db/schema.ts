@@ -108,6 +108,16 @@ export const brews = sqliteTable('brews', {
   overallRating: real('overall_rating'),
   /** Optional sub-scores: { aroma, acidity, sweetness, body, bitterness, aftertaste, balance }. */
   tastingJson: text('tasting_json', { mode: 'json' }).$type<Record<string, number>>(),
+  /** Acceptance filter: null = not yet rated, true = pass, false = fail */
+  isPass: integer('is_pass', { mode: 'boolean' }),
+  /** Tags explaining a failure, e.g. ['sour', 'flat'] */
+  failReasonsJson: text('fail_reasons_json', { mode: 'json' }).$type<string[]>(),
+  /** Sensory coherence / balance. 0–5. Only set when isPass = true. */
+  harmony: real('harmony'),
+  /** Would you brew this again? Only set when isPass = true. */
+  brewIntent: text('brew_intent'), // 'definitely-yes' | 'maybe' | 'no'
+  /** SCA-inspired flavor descriptor tags, e.g. ['berry','caramel'] */
+  descriptorsJson: text('descriptors_json', { mode: 'json' }).$type<string[]>(),
   notes: text('notes'),
   isFavorite: integer('is_favorite', { mode: 'boolean' }).notNull().default(false),
 

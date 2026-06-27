@@ -15,6 +15,13 @@
       "when": 1782574692334,
       "tag": "0001_supreme_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782579658295,
+      "tag": "0002_oval_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

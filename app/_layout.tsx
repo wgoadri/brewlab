@@ -41,6 +41,7 @@ export default function RootLayout() {
           <Stack.Screen name="brewers/new" options={{ title: 'Add brewer', presentation: 'modal' }} />
           <Stack.Screen name="brew/[id]" options={{ title: 'Brew detail' }} />
           <Stack.Screen name="brew/timer" options={{ title: 'Timer', headerShown: false }} />
+          <Stack.Screen name="brew/rate" options={{ title: 'Rate brew', presentation: 'modal' }} />
         </Stack>
       </Suspense>
     </SafeAreaProvider>

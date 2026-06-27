@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
@@ -17,6 +17,7 @@ function getParamValue(brew: Brew, spec: ParamSpec): string {
 
 export default function BrewDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { data: brew, updatedAt } = useLiveQuery(
     db.query.brews.findFirst({
       where: eq(brews.id, Number(id)),
@@ -90,10 +91,52 @@ export default function BrewDetailScreen() {
       {/* Rating card */}
       <Text style={styles.sectionTitle}>Rating</Text>
       <View style={styles.card}>
-        {brew.overallRating != null ? (
-          <Text style={styles.ratingText}>★ {brew.overallRating} / 10</Text>
+        {brew.isPass === null || brew.isPass === undefined ? (
+          <>
+            <Text style={styles.muted}>Not rated yet</Text>
+            <Pressable
+              style={styles.rateBtn}
+              onPress={() => router.push({ pathname: '/brew/rate', params: { id: brew.id } })}
+            >
+              <Text style={styles.rateBtnText}>Rate this brew →</Text>
+            </Pressable>
+          </>
+        ) : brew.isPass === false ? (
+          <>
+            <Text style={{ color: '#c62828', fontWeight: '700', fontSize: 16 }}>❌ Failed</Text>
+            {brew.failReasonsJson?.map(r => (
+              <Text key={r} style={styles.muted}>• {r}</Text>
+            ))}
+          </>
         ) : (
-          <Text style={styles.muted}>Not rated yet</Text>
+          <>
+            <Text style={styles.ratingText}>★ {brew.overallRating} / 10</Text>
+            {brew.harmony != null && (
+              <Text style={styles.muted}>Harmony: {brew.harmony} / 5</Text>
+            )}
+            {brew.brewIntent && (
+              <Text style={styles.muted}>
+                Brew again: {brew.brewIntent.replace('-', ' ')}
+              </Text>
+            )}
+            {brew.tastingJson &&
+              Object.entries(brew.tastingJson).map(([k, v]) => (
+                <Text key={k} style={styles.muted}>{k}: {v}/10</Text>
+              ))}
+            {brew.descriptorsJson && brew.descriptorsJson.length > 0 && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                {brew.descriptorsJson.map(d => (
+                  <View
+                    key={d}
+                    style={{ backgroundColor: '#eaded2', borderRadius: 12,
+                             paddingHorizontal: 10, paddingVertical: 4 }}
+                  >
+                    <Text style={{ fontSize: 12, color: '#5a4636' }}>{d}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </>
         )}
       </View>
     </ScrollView>
@@ -122,4 +165,9 @@ const styles = StyleSheet.create({
   paramValue: { fontSize: 14, fontWeight: '600', color: '#3a2a1c', textAlign: 'right' },
   notesText: { fontSize: 14, color: '#3a2a1c', lineHeight: 21 },
   ratingText: { fontSize: 18, fontWeight: '700', color: '#7a4a2b' },
+  rateBtn: {
+    marginTop: 8, backgroundColor: '#7a4a2b', borderRadius: 10,
+    paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start',
+  },
+  rateBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
