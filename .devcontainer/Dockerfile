@@ -10,9 +10,9 @@
 # `1-24-bookworm` does NOT exist. `24-bookworm` also works (tracks latest major).
 FROM mcr.microsoft.com/devcontainers/javascript-node:4-24-bookworm
 
-# Extra shell CLIs (Claude Code bundles its own ripgrep; handy anyway).
+# Extra shell CLIs + libnspr4 (required by React Native DevTools debugger shell).
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends ripgrep jq \
+RUN apt-get update && apt-get install -y --no-install-recommends ripgrep jq libnspr4 \
  && rm -rf /var/lib/apt/lists/*
 
 # A few project aliases appended to the image's existing zsh config.
