@@ -39,3 +39,7 @@ yarn-error.*
 
 # devcontainer scratch
 .devcontainer/.env.devcontainer
+.claude-volume-backup
+
+# Claude Code agent runtime state
+.claude/agent-memory/
