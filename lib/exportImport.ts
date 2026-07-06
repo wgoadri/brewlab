@@ -17,10 +17,13 @@ import {
   brewers,
   brews,
   grinders,
+  recipes,
   type Bean,
   type Brewer,
   type Brew,
   type Grinder,
+  type Recipe,
+  type RecipeStep,
 } from '@/db/schema';
 
 // ── Serialised shapes (Dates become ISO strings in JSON) ──────────────────────
@@ -69,11 +72,25 @@ interface ExportGrinder {
   updatedAt: string;
 }
 
+interface ExportRecipe {
+  name: string;
+  method: string;
+  /** 0-based index into the bundle's brewers array, or null. */
+  _brewerIdx: number | null;
+  stepsJson: RecipeStep[];
+  notes: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ExportBrew {
   /** 0-based index into the bundle's beans array, or null. */
   _beanIdx: number | null;
   _brewerIdx: number | null;
   _grinderIdx: number | null;
+  /** Absent in pre-recipes backups. */
+  _recipeIdx?: number | null;
   method: string;
   brewedAt: string;
   doseG: number | null;
@@ -107,6 +124,8 @@ export interface ExportBundle {
   beans: ExportBean[];
   brewers: ExportBrewer[];
   grinders: ExportGrinder[];
+  /** Absent in pre-recipes backups. */
+  recipes?: ExportRecipe[];
   brews: ExportBrew[];
 }
 
@@ -171,16 +190,31 @@ function serializeGrinder(g: Grinder): ExportGrinder {
   };
 }
 
+function serializeRecipe(r: Recipe, brewerList: Brewer[]): ExportRecipe {
+  return {
+    name: r.name,
+    method: r.method,
+    _brewerIdx: r.brewerId != null ? brewerList.findIndex(x => x.id === r.brewerId) : null,
+    stepsJson: r.stepsJson,
+    notes: r.notes,
+    archivedAt: iso(r.archivedAt),
+    createdAt: isoReq(r.createdAt),
+    updatedAt: isoReq(r.updatedAt),
+  };
+}
+
 function serializeBrew(
   b: Brew,
   beanList: Bean[],
   brewerList: Brewer[],
   grinderList: Grinder[],
+  recipeList: Recipe[],
 ): ExportBrew {
   return {
     _beanIdx: b.beanId != null ? beanList.findIndex(x => x.id === b.beanId) : null,
     _brewerIdx: b.brewerId != null ? brewerList.findIndex(x => x.id === b.brewerId) : null,
     _grinderIdx: b.grinderId != null ? grinderList.findIndex(x => x.id === b.grinderId) : null,
+    _recipeIdx: b.recipeId != null ? recipeList.findIndex(x => x.id === b.recipeId) : null,
     method: b.method,
     brewedAt: isoReq(b.brewedAt),
     doseG: b.doseG,
@@ -217,10 +251,11 @@ const fromIsoReq = (s: string): Date => new Date(s);
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 export async function exportData(): Promise<void> {
-  const [beanList, brewerList, grinderList, brewList] = await Promise.all([
+  const [beanList, brewerList, grinderList, recipeList, brewList] = await Promise.all([
     db.select().from(beans),
     db.select().from(brewers),
     db.select().from(grinders),
+    db.select().from(recipes),
     db.select().from(brews),
   ]);
 
@@ -230,7 +265,8 @@ export async function exportData(): Promise<void> {
     beans: beanList.map(serializeBean),
     brewers: brewerList.map(serializeBrewer),
     grinders: grinderList.map(serializeGrinder),
-    brews: brewList.map(b => serializeBrew(b, beanList, brewerList, grinderList)),
+    recipes: recipeList.map(r => serializeRecipe(r, brewerList)),
+    brews: brewList.map(b => serializeBrew(b, beanList, brewerList, grinderList, recipeList)),
   };
 
   const file = new File(Paths.cache, `brewlab-${Date.now()}.json`);
@@ -266,6 +302,7 @@ export async function importData(): Promise<ImportResult> {
   const newBeanIds: number[] = [];
   const newBrewerIds: number[] = [];
   const newGrinderIds: number[] = [];
+  const newRecipeIds: number[] = [];
 
   await db.transaction(async tx => {
     for (const b of bundle.beans) {
@@ -321,11 +358,26 @@ export async function importData(): Promise<ImportResult> {
       newGrinderIds.push(r.lastInsertRowId as number);
     }
 
+    for (const r of bundle.recipes ?? []) {
+      const res = await tx.insert(recipes).values({
+        name: r.name,
+        method: r.method,
+        brewerId: r._brewerIdx != null ? newBrewerIds[r._brewerIdx] : undefined,
+        stepsJson: r.stepsJson,
+        notes: r.notes,
+        archivedAt: fromIso(r.archivedAt),
+        createdAt: fromIsoReq(r.createdAt),
+        updatedAt: fromIsoReq(r.updatedAt),
+      });
+      newRecipeIds.push(res.lastInsertRowId as number);
+    }
+
     for (const brew of bundle.brews) {
       await tx.insert(brews).values({
         beanId: brew._beanIdx != null ? newBeanIds[brew._beanIdx] : undefined,
         brewerId: brew._brewerIdx != null ? newBrewerIds[brew._brewerIdx] : undefined,
         grinderId: brew._grinderIdx != null ? newGrinderIds[brew._grinderIdx] : undefined,
+        recipeId: brew._recipeIdx != null ? newRecipeIds[brew._recipeIdx] : undefined,
         method: brew.method,
         brewedAt: fromIsoReq(brew.brewedAt),
         doseG: brew.doseG,

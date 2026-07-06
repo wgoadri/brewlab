@@ -16,7 +16,7 @@ import * as z from 'zod';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 
 import { db } from '@/db/client';
-import { beans, grinders } from '@/db/schema';
+import { beans, grinders, recipes } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import type { BrewDraft } from '@/lib/brewDraft';
 import { ParamInput } from '@/components/ParamInput';
@@ -103,6 +103,17 @@ export function BrewForm({
 
   const { data: beanList } = useLiveQuery(db.select().from(beans).orderBy(beans.name));
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(grinders.name));
+  const { data: recipeList } = useLiveQuery(db.select().from(recipes).orderBy(recipes.name));
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
+
+  const methodRecipes = useMemo(
+    () => recipeList?.filter((r) => r.method === method) ?? [],
+    [recipeList, method],
+  );
+  const selectedRecipe = useMemo(
+    () => methodRecipes.find((r) => r.id === selectedRecipeId) ?? null,
+    [methodRecipes, selectedRecipeId],
+  );
 
   const params = METHODS[method].params;
 
@@ -182,6 +193,8 @@ export function BrewForm({
         typeof columns['bloomTimeS'] === 'number' ? Math.round(columns['bloomTimeS']) : undefined,
       paramsJson: Object.keys(paramsJson).length > 0 ? paramsJson : undefined,
       notes: notes.trim() || undefined,
+      recipeId: selectedRecipe?.id,
+      steps: selectedRecipe?.stepsJson,
       finalYieldG: (() => {
         if (!showFinalYield) return undefined;
         const parsed = parseFloat(finalYieldText.replace(',', '.'));
@@ -223,6 +236,43 @@ export function BrewForm({
                 </Pressable>
               ))}
             </View>
+          </View>
+        </>
+      )}
+
+      {/* Recipe (create mode only: steps are already recorded on an existing brew) */}
+      {!lockMethod && methodRecipes.length > 0 && (
+        <>
+          <Text style={styles.sectionHeader}>Recipe</Text>
+          <View style={styles.card}>
+            <View style={styles.chipRow}>
+              <Pressable
+                onPress={() => setSelectedRecipeId(null)}
+                style={[styles.chip, selectedRecipe === null && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, selectedRecipe === null && styles.chipTextActive]}>
+                  Default steps
+                </Text>
+              </Pressable>
+              {methodRecipes.map((r) => (
+                <Pressable
+                  key={r.id}
+                  onPress={() => setSelectedRecipeId(r.id)}
+                  style={[styles.chip, selectedRecipe?.id === r.id && styles.chipActive]}
+                >
+                  <Text
+                    style={[styles.chipText, selectedRecipe?.id === r.id && styles.chipTextActive]}
+                  >
+                    {r.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            {selectedRecipe && (
+              <Text style={styles.recipeStepsHint}>
+                {selectedRecipe.stepsJson.map((s) => s.label).join(' → ')}
+              </Text>
+            )}
           </View>
         </>
       )}
@@ -421,4 +471,5 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   suggestionBannerText: { fontSize: 12, color: Colors.accent, fontWeight: '500' },
+  recipeStepsHint: { fontSize: 12, color: Colors.textTertiary, lineHeight: 17 },
 });

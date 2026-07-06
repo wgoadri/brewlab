@@ -26,7 +26,7 @@ export default function BrewDetailScreen() {
   const { data: brew, updatedAt } = useLiveQuery(
     db.query.brews.findFirst({
       where: eq(brews.id, Number(id)),
-      with: { bean: true, grinder: true },
+      with: { bean: true, grinder: true, recipe: true },
     })
   );
 
@@ -95,6 +95,7 @@ export default function BrewDetailScreen() {
               : ''}
           </Text>
         )}
+        {brew.recipe && <Text style={styles.beanName}>Recipe: {brew.recipe.name}</Text>}
         <Text style={styles.dateText}>{brew.brewedAt.toLocaleDateString()}</Text>
       </View>
 

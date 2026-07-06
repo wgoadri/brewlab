@@ -46,7 +46,8 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   const router = useRouter();
   useKeepAwake();
 
-  const steps = METHODS[draft.method].defaultSteps;
+  // Recipe steps when one was picked; the method's hardcoded defaults otherwise.
+  const steps = draft.steps?.length ? draft.steps : METHODS[draft.method].defaultSteps;
   const timerMode = METHODS[draft.method].timerMode;
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -62,6 +63,10 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   }, []);
 
   const currentStep = steps[stepIndex];
+  const instruction =
+    'instruction' in currentStep && typeof currentStep.instruction === 'string'
+      ? currentStep.instruction
+      : null;
   const durationMs = (currentStep.durationSec ?? 0) * 1000;
   const stepElapsedMs = now - stepStartMs;
   const totalElapsedMs = now - brewStartMs;
@@ -132,6 +137,7 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
         totalTimeS,
         stepsJson,
         finalYieldG,
+        recipeId: draft.recipeId,
       });
       router.replace(`/brew/${result.lastInsertRowId}`);
     } catch (e) {
@@ -199,6 +205,7 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
           Step {stepIndex + 1} of {steps.length}
         </Text>
         <Text style={styles.stepLabel}>{currentStep.label}</Text>
+        {instruction ? <Text style={styles.stepInstruction}>{instruction}</Text> : null}
       </View>
 
       <View style={styles.progressTrack}>
@@ -258,6 +265,13 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '300',
     textAlign: 'center',
+  },
+  stepInstruction: {
+    color: Colors.textSecondary,
+    fontSize: 15,
+    lineHeight: 21,
+    textAlign: 'center',
+    paddingHorizontal: 12,
   },
   progressTrack: {
     width: '100%',

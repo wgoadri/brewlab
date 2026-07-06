@@ -37,6 +37,7 @@ export default function NewBrewScreen() {
       bloomTimeS: draft.bloomTimeS,
       paramsJson: draft.paramsJson,
       notes: draft.notes,
+      recipeId: draft.recipeId,
     });
     router.replace(`/brew/${result.lastInsertRowId}`);
   }
