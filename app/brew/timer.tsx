@@ -20,7 +20,13 @@ function formatMs(ms: number): string {
 
 export default function TimerScreen() {
   const router = useRouter();
-  const draft = getPendingBrew();
+  // Consume the draft once (same pattern as the suggestion prefill in new.tsx):
+  // backing out of the timer must not leave a stale draft for the next visit.
+  const [draft] = useState<BrewDraft | null>(() => {
+    const d = getPendingBrew();
+    if (d) clearPendingBrew();
+    return d;
+  });
 
   if (!draft) {
     return (
@@ -75,6 +81,9 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
 
   useEffect(() => {
     if (timerMode !== 'guided') return;
+    // Last step never auto-advances: advanceStep() would re-fire on every tick
+    // (haptic loop + duplicate completedMs entries) — the user ends it with Done.
+    if (isLastStep) return;
     if (currentStep.durationSec && stepElapsedMs >= durationMs) {
       const id = setTimeout(advanceStep, 0);
       return () => clearTimeout(id);
@@ -109,7 +118,6 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
         totalTimeS,
         stepsJson,
       });
-      clearPendingBrew();
       router.replace(`/brew/${result.lastInsertRowId}`);
     } catch (e) {
       Alert.alert('Save failed', e instanceof Error ? e.message : String(e));
