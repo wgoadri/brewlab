@@ -1,0 +1,1 @@
+ALTER TABLE `brews` ADD `final_yield_g` real;

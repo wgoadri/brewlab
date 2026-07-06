@@ -106,6 +106,9 @@ export const brews = sqliteTable('brews', {
   stepsJson: text('steps_json', { mode: 'json' }).$type<{ label: string; durationSec?: number }[]>(),
 
   // Result -------------------------------------------------------------------
+  /** Measured weight of the coffee in the cup (g). Distinct from espresso's
+   *  target `yieldG` param — this is what actually came out. */
+  finalYieldG: real('final_yield_g'),
   /** THE optimization objective. Suggested scale: 0–10. */
   overallRating: real('overall_rating'),
   /** Optional sub-scores: { aroma, acidity, sweetness, body, bitterness, aftertaste, balance }. */
