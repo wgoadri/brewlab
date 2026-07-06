@@ -210,3 +210,21 @@ export const METHOD_LIST: MethodDef[] = Object.values(METHODS);
 export function optimizableParams(method: BrewMethod): ParamSpec[] {
   return METHODS[method].params.filter((p) => p.optimizable && (p.type === 'number' || p.type === 'int' || p.type === 'enum'));
 }
+
+/**
+ * Read a brew row back into ParamSpec-keyed values (columns + paramsJson),
+ * e.g. to prefill a form or copy a brew.
+ */
+export function paramValuesFromBrew(
+  brew: import('../db/schema').Brew,
+  method: BrewMethod,
+): Record<string, number | string | boolean> {
+  const out: Record<string, number | string | boolean> = {};
+  for (const spec of METHODS[method].params) {
+    const raw = spec.column != null ? brew[spec.column] : brew.paramsJson?.[spec.key];
+    if (typeof raw === 'number' || typeof raw === 'string' || typeof raw === 'boolean') {
+      out[spec.key] = raw;
+    }
+  }
+  return out;
+}
