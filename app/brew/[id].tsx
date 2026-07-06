@@ -6,7 +6,7 @@ import { Alert, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { setSuggestion } from '@/lib/brewSuggestion';
-import { METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
+import { METHODS, paramValuesFromBrew, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { Colors, Radii, Spacing } from '@/lib/theme';
 import type { Brew } from '@/db/schema';
 
@@ -50,16 +50,11 @@ export default function BrewDetailScreen() {
 
   function onBrewAgain() {
     if (!brew || !methodDef) return;
-    const params: Record<string, number | string | boolean> = {};
-    for (const spec of methodDef.params) {
-      const raw = spec.column != null ? brew[spec.column] : brew.paramsJson?.[spec.key];
-      if (raw != null) params[spec.key] = raw as number | string | boolean;
-    }
     setSuggestion({
       method: brew.method as BrewMethod,
       beanId: brew.beanId ?? undefined,
       grinderId: brew.grinderId ?? undefined,
-      params,
+      params: paramValuesFromBrew(brew, brew.method as BrewMethod),
       rationale: `Copied from your brew of ${brew.brewedAt.toLocaleDateString()}`,
     });
     router.push('/brew/new');
@@ -205,9 +200,17 @@ export default function BrewDetailScreen() {
 
       {/* Actions */}
       {methodDef && (
-        <Pressable style={styles.brewAgainBtn} onPress={onBrewAgain}>
-          <Text style={styles.brewAgainBtnText}>Brew again</Text>
-        </Pressable>
+        <>
+          <Pressable style={styles.brewAgainBtn} onPress={onBrewAgain}>
+            <Text style={styles.brewAgainBtnText}>Brew again</Text>
+          </Pressable>
+          <Pressable
+            style={styles.editBtn}
+            onPress={() => router.push({ pathname: '/brew/edit', params: { id: brew.id } })}
+          >
+            <Text style={styles.editBtnText}>Edit brew</Text>
+          </Pressable>
+        </>
       )}
       <Pressable style={styles.destructiveBtn} onPress={onDelete}>
         <Text style={styles.destructiveBtnText}>Delete brew</Text>
@@ -260,6 +263,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14, alignItems: 'center',
   },
   brewAgainBtnText: { color: Colors.bgSurface, fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
+  editBtn: {
+    marginTop: Spacing.sm, borderRadius: Radii.button, paddingVertical: 14, alignItems: 'center',
+    borderWidth: 1.5, borderColor: Colors.accent,
+  },
+  editBtnText: { color: Colors.accent, fontSize: 15, fontWeight: '500' },
   destructiveBtn: {
     marginTop: Spacing.sm, borderRadius: Radii.button, paddingVertical: 14, alignItems: 'center',
     borderWidth: 1.5, borderColor: Colors.destructive,
