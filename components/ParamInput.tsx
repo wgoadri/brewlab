@@ -1,5 +1,5 @@
 import Slider from '@react-native-community/slider';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -15,7 +15,8 @@ import { Colors, Radii } from '@/lib/theme';
 export interface ParamInputProps {
   spec: ParamSpec;
   value: string | number | boolean | undefined;
-  onChange: (v: string | number | boolean) => void;
+  /** undefined = cleared: the param is unset rather than invalid. */
+  onChange: (v: string | number | boolean | undefined) => void;
   error?: string;
 }
 
@@ -33,6 +34,13 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
   const [raw, setRaw] = useState<string>(
     value != null && value !== '' ? String(value) : '',
   );
+  // Re-sync the text when the form value changes underneath us (reset/prefill):
+  // raw is only authoritative while the user is typing.
+  const [prevValue, setPrevValue] = useState<typeof value>(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
+    setRaw(value != null && value !== '' ? String(value) : '');
+  }
 
   if (spec.type === 'boolean') {
     return (
@@ -101,8 +109,14 @@ export function ParamInput({ spec, value, onChange, error }: ParamInputProps) {
             value={raw}
             onChangeText={(t) => setRaw(t)}
             onBlur={() => {
-              const parsed = spec.type === 'int' ? parseInt(raw, 10) : parseFloat(raw);
-              onChange(parsed);
+              const trimmed = raw.trim().replace(',', '.');
+              if (trimmed === '') {
+                onChange(undefined);
+                return;
+              }
+              const parsed = spec.type === 'int' ? parseInt(trimmed, 10) : parseFloat(trimmed);
+              // Never push NaN into the form: unparseable input clears the param.
+              onChange(Number.isFinite(parsed) ? parsed : undefined);
             }}
             placeholder={spec.default != null ? String(spec.default) : undefined}
             placeholderTextColor={Colors.textTertiary}
@@ -149,6 +163,12 @@ function SliderInput({ spec, value, onChange, error }: ParamInputProps) {
     setPrevValue(value);
     if (typeof value === 'number') setSliderVal(value);
   }
+
+  // The slider always displays a number, so the form must hold it too —
+  // otherwise an untouched slider saves null while the UI shows a value.
+  useEffect(() => {
+    if (typeof value !== 'number') onChange(initial);
+  }, [value, initial, onChange]);
 
   const formatted =
     spec.step != null && spec.step < 1
