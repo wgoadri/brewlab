@@ -65,6 +65,7 @@ export default function EditBrewScreen() {
         bloomTimeS: draft.bloomTimeS ?? null,
         paramsJson: draft.paramsJson ?? null,
         notes: draft.notes ?? null,
+        finalYieldG: draft.finalYieldG ?? null,
         updatedAt: new Date(),
       })
       .where(eq(brews.id, brew.id));
@@ -79,6 +80,8 @@ export default function EditBrewScreen() {
       initialGrinderId={brew.grinderId}
       initialParams={initialParams}
       initialNotes={brew.notes ?? ''}
+      showFinalYield
+      initialFinalYield={brew.finalYieldG}
       primaryLabel='Save changes'
       onPrimary={onSave}
     />

@@ -62,6 +62,9 @@ export interface BrewFormProps {
   /** ParamSpec-keyed values merged over the method defaults while `method === initialMethod`. */
   initialParams?: Record<string, number | string | boolean>;
   initialNotes?: string;
+  /** Show the measured final-yield input (edit mode; new brews get it after the timer). */
+  showFinalYield?: boolean;
+  initialFinalYield?: number | null;
   /** Short text shown above the parameters (e.g. the suggestion rationale). */
   banner?: string;
   primaryLabel: string;
@@ -79,6 +82,8 @@ export function BrewForm({
   initialGrinderId,
   initialParams,
   initialNotes,
+  showFinalYield = false,
+  initialFinalYield,
   banner,
   primaryLabel,
   onPrimary,
@@ -88,6 +93,9 @@ export function BrewForm({
   const [method, setMethod] = useState<BrewMethod>(initialMethod ?? 'aeropress');
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState(initialNotes ?? '');
+  const [finalYieldText, setFinalYieldText] = useState(
+    initialFinalYield != null ? String(initialFinalYield) : '',
+  );
   const [selectedBeanId, setSelectedBeanId] = useState<number | null>(initialBeanId ?? null);
   const [selectedGrinderId, setSelectedGrinderId] = useState<number | null>(
     initialGrinderId ?? null,
@@ -174,6 +182,11 @@ export function BrewForm({
         typeof columns['bloomTimeS'] === 'number' ? Math.round(columns['bloomTimeS']) : undefined,
       paramsJson: Object.keys(paramsJson).length > 0 ? paramsJson : undefined,
       notes: notes.trim() || undefined,
+      finalYieldG: (() => {
+        if (!showFinalYield) return undefined;
+        const parsed = parseFloat(finalYieldText.replace(',', '.'));
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+      })(),
     };
   }
 
@@ -300,6 +313,29 @@ export function BrewForm({
         ))}
       </View>
 
+      {/* Result (edit mode) */}
+      {showFinalYield && (
+        <>
+          <Text style={styles.sectionHeader}>Result</Text>
+          <View style={styles.card}>
+            <View style={styles.yieldRow}>
+              <Text style={styles.yieldLabel}>Final yield</Text>
+              <View style={styles.yieldInputRow}>
+                <TextInput
+                  style={styles.yieldInput}
+                  value={finalYieldText}
+                  onChangeText={setFinalYieldText}
+                  keyboardType='decimal-pad'
+                  placeholder='–'
+                  placeholderTextColor={Colors.textTertiary}
+                />
+                <Text style={styles.yieldUnit}>g</Text>
+              </View>
+            </View>
+          </View>
+        </>
+      )}
+
       {/* Notes */}
       <Text style={styles.sectionHeader}>Notes</Text>
       <View style={styles.card}>
@@ -358,6 +394,14 @@ const styles = StyleSheet.create({
   paramSep: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border, paddingTop: Spacing.md, marginTop: Spacing.md },
   muted: { color: Colors.textSecondary, fontSize: 14 },
   notesInput: { minHeight: 80, fontSize: 15, color: Colors.textPrimary, lineHeight: 22 },
+  yieldRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  yieldLabel: { fontSize: 13, fontWeight: '500', color: Colors.textSecondary, letterSpacing: 0.1 },
+  yieldInputRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+  yieldInput: {
+    fontSize: 15, fontWeight: '600', color: Colors.textPrimary,
+    fontVariant: ['tabular-nums'], textAlign: 'right', minWidth: 60, padding: 0,
+  },
+  yieldUnit: { fontSize: 12, fontWeight: '400', color: Colors.textTertiary },
   primaryBtn: {
     marginTop: Spacing.xxl, backgroundColor: Colors.accent, borderRadius: Radii.button,
     paddingVertical: 16, alignItems: 'center',

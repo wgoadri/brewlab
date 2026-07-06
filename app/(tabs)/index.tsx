@@ -47,6 +47,7 @@ export default function BrewsScreen() {
               {item.doseG ?? '–'} g · {item.waterG ?? '–'} g · {item.waterTempC ?? '–'} °C
               {' · '}grind {item.grindSetting ?? '–'}
               {item.grinder ? ` (${item.grinder.name})` : ''}
+              {item.finalYieldG != null ? ` · → ${item.finalYieldG} g` : ''}
             </Text>
             {item.isPass === false && (
               <Text style={styles.fail}>Failed</Text>

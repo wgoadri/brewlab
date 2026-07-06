@@ -129,6 +129,18 @@ export default function BrewDetailScreen() {
                 </View>
               </View>
             )}
+            {brew.finalYieldG != null && (
+              <View>
+                <View style={styles.paramSep} />
+                <View style={styles.paramRow}>
+                  <Text style={styles.paramLabel}>Final yield</Text>
+                  <View style={styles.paramValueRow}>
+                    <Text style={styles.paramValue}>{brew.finalYieldG}</Text>
+                    <Text style={styles.paramUnit}>g</Text>
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
         </>
       )}

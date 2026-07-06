@@ -86,6 +86,8 @@ interface ExportBrew {
   bloomTimeS: number | null;
   paramsJson: Record<string, number | string | boolean> | null;
   stepsJson: { label: string; durationSec?: number }[] | null;
+  /** Absent in pre-finalYield backups — treated as null on import. */
+  finalYieldG?: number | null;
   overallRating: number | null;
   tastingJson: Record<string, number> | null;
   isPass: boolean | null;
@@ -191,6 +193,7 @@ function serializeBrew(
     bloomTimeS: b.bloomTimeS,
     paramsJson: b.paramsJson ?? null,
     stepsJson: b.stepsJson ?? null,
+    finalYieldG: b.finalYieldG,
     overallRating: b.overallRating,
     tastingJson: b.tastingJson ?? null,
     isPass: b.isPass ?? null,
@@ -335,6 +338,7 @@ export async function importData(): Promise<ImportResult> {
         bloomTimeS: brew.bloomTimeS,
         paramsJson: brew.paramsJson ?? undefined,
         stepsJson: brew.stepsJson ?? undefined,
+        finalYieldG: brew.finalYieldG ?? undefined,
         overallRating: brew.overallRating,
         tastingJson: brew.tastingJson ?? undefined,
         isPass: brew.isPass,
