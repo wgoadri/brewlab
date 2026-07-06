@@ -13,7 +13,7 @@ export default function BrewsScreen() {
   const router = useRouter();
   const { data } = useLiveQuery(
     db.query.brews.findMany({
-      with: { bean: true },
+      with: { bean: true, grinder: true },
       orderBy: [desc(brews.brewedAt)],
     })
   );
@@ -46,6 +46,7 @@ export default function BrewsScreen() {
             <Text style={styles.paramsRow}>
               {item.doseG ?? '–'} g · {item.waterG ?? '–'} g · {item.waterTempC ?? '–'} °C
               {' · '}grind {item.grindSetting ?? '–'}
+              {item.grinder ? ` (${item.grinder.name})` : ''}
             </Text>
             {item.isPass === false && (
               <Text style={styles.fail}>Failed</Text>
