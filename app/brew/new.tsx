@@ -289,7 +289,9 @@ export default function NewBrewScreen() {
       <Text style={styles.sectionHeader}>Parameters</Text>
       {pendingSuggestion?.method === method && (
         <View style={styles.suggestionBanner}>
-          <Text style={styles.suggestionBannerText}>Prefilled from optimizer suggestion</Text>
+          <Text style={styles.suggestionBannerText}>
+            {pendingSuggestion?.rationale || 'Prefilled from optimizer suggestion'}
+          </Text>
         </View>
       )}
       <View style={[styles.card, { gap: 0 }]}>

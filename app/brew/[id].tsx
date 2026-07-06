@@ -5,6 +5,7 @@ import { Alert, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View
 
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
+import { setSuggestion } from '@/lib/brewSuggestion';
 import { METHODS, type BrewMethod, type ParamSpec } from '@/lib/methods';
 import { Colors, Radii, Spacing } from '@/lib/theme';
 import type { Brew } from '@/db/schema';
@@ -25,7 +26,7 @@ export default function BrewDetailScreen() {
   const { data: brew, updatedAt } = useLiveQuery(
     db.query.brews.findFirst({
       where: eq(brews.id, Number(id)),
-      with: { bean: true },
+      with: { bean: true, grinder: true },
     })
   );
 
@@ -46,6 +47,23 @@ export default function BrewDetailScreen() {
   }
 
   const methodDef = METHODS[brew.method as BrewMethod];
+
+  function onBrewAgain() {
+    if (!brew || !methodDef) return;
+    const params: Record<string, number | string | boolean> = {};
+    for (const spec of methodDef.params) {
+      const raw = spec.column != null ? brew[spec.column] : brew.paramsJson?.[spec.key];
+      if (raw != null) params[spec.key] = raw as number | string | boolean;
+    }
+    setSuggestion({
+      method: brew.method as BrewMethod,
+      beanId: brew.beanId ?? undefined,
+      grinderId: brew.grinderId ?? undefined,
+      params,
+      rationale: `Copied from your brew of ${brew.brewedAt.toLocaleDateString()}`,
+    });
+    router.push('/brew/new');
+  }
 
   function onDelete() {
     Alert.alert('Delete brew?', 'This cannot be undone.', [
@@ -74,6 +92,14 @@ export default function BrewDetailScreen() {
         <Text style={styles.beanName}>
           {brew.bean ? brew.bean.name : 'No bean selected'}
         </Text>
+        {brew.grinder && (
+          <Text style={styles.beanName}>
+            {brew.grinder.name}
+            {brew.grindSetting != null
+              ? ` · ${brew.grindSetting}${brew.grinder.settingUnit ? ` ${brew.grinder.settingUnit}` : ''}`
+              : ''}
+          </Text>
+        )}
         <Text style={styles.dateText}>{brew.brewedAt.toLocaleDateString()}</Text>
       </View>
 
@@ -177,7 +203,12 @@ export default function BrewDetailScreen() {
         )}
       </View>
 
-      {/* Delete */}
+      {/* Actions */}
+      {methodDef && (
+        <Pressable style={styles.brewAgainBtn} onPress={onBrewAgain}>
+          <Text style={styles.brewAgainBtnText}>Brew again</Text>
+        </Pressable>
+      )}
       <Pressable style={styles.destructiveBtn} onPress={onDelete}>
         <Text style={styles.destructiveBtnText}>Delete brew</Text>
       </Pressable>
@@ -224,6 +255,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12, paddingHorizontal: 16, alignSelf: 'flex-start',
   },
   primaryBtnText: { color: Colors.bgSurface, fontWeight: '600', fontSize: 14, letterSpacing: 0.2 },
+  brewAgainBtn: {
+    marginTop: Spacing.lg, backgroundColor: Colors.accent, borderRadius: Radii.button,
+    paddingVertical: 14, alignItems: 'center',
+  },
+  brewAgainBtnText: { color: Colors.bgSurface, fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
   destructiveBtn: {
     marginTop: Spacing.sm, borderRadius: Radii.button, paddingVertical: 14, alignItems: 'center',
     borderWidth: 1.5, borderColor: Colors.destructive,
