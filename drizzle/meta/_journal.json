@@ -36,6 +36,13 @@
       "when": 1783358986737,
       "tag": "0004_exotic_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1783360300540,
+      "tag": "0005_foamy_titania",
+      "breakpoints": true
     }
   ]
 }

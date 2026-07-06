@@ -78,12 +78,35 @@ export const grinders = sqliteTable('grinders', {
   ...timestamps,
 });
 
+// ── Recipes (the procedure: ordered, timed steps for a method) ───────────────
+export const recipes = sqliteTable('recipes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(), // "James Hoffmann V60", "Quick morning AeroPress"
+  /** The method this recipe applies to; any brewer of that method can use it. */
+  method: text('method').notNull(),
+  /** Optionally pin the recipe to one specific machine. */
+  brewerId: integer('brewer_id').references(() => brewers.id),
+  /**
+   * Ordered steps the timer runs. `instruction` may contain {paramKey}
+   * placeholders (e.g. "Pour {bloomWaterG}g of water"), resolved against the
+   * brew's parameters when the timer runs.
+   */
+  stepsJson: text('steps_json', { mode: 'json' })
+    .$type<{ label: string; durationSec?: number; instruction?: string }[]>()
+    .notNull(),
+  notes: text('notes'),
+  archivedAt: integer('archived_at', { mode: 'timestamp' }),
+  ...timestamps,
+});
+
 // ── Brews (the core log + result) ────────────────────────────────────────────
 export const brews = sqliteTable('brews', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   beanId: integer('bean_id').references(() => beans.id),
   brewerId: integer('brewer_id').references(() => brewers.id),
   grinderId: integer('grinder_id').references(() => grinders.id),
+  /** The recipe whose steps guided this brew, if any. */
+  recipeId: integer('recipe_id').references(() => recipes.id),
   /** Denormalised from the brewer for easy filtering/grouping. */
   method: text('method').notNull(),
   brewedAt: integer('brewed_at', { mode: 'timestamp' })
@@ -136,6 +159,12 @@ export const beansRelations = relations(beans, ({ many }) => ({
 
 export const brewersRelations = relations(brewers, ({ many }) => ({
   brews: many(brews),
+  recipes: many(recipes),
+}));
+
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
+  brewer: one(brewers, { fields: [recipes.brewerId], references: [brewers.id] }),
+  brews: many(brews),
 }));
 
 export const grindersRelations = relations(grinders, ({ many }) => ({
@@ -146,6 +175,7 @@ export const brewsRelations = relations(brews, ({ one }) => ({
   bean: one(beans, { fields: [brews.beanId], references: [beans.id] }),
   brewer: one(brewers, { fields: [brews.brewerId], references: [brewers.id] }),
   grinder: one(grinders, { fields: [brews.grinderId], references: [grinders.id] }),
+  recipe: one(recipes, { fields: [brews.recipeId], references: [recipes.id] }),
 }));
 
 // ── Inferred types (use these throughout the app) ────────────────────────────
@@ -157,3 +187,6 @@ export type Grinder = typeof grinders.$inferSelect;
 export type NewGrinder = typeof grinders.$inferInsert;
 export type Brew = typeof brews.$inferSelect;
 export type NewBrew = typeof brews.$inferInsert;
+export type Recipe = typeof recipes.$inferSelect;
+export type NewRecipe = typeof recipes.$inferInsert;
+export type RecipeStep = { label: string; durationSec?: number; instruction?: string };
