@@ -89,10 +89,14 @@ export const recipes = sqliteTable('recipes', {
   /**
    * Ordered steps the timer runs. `instruction` may contain {paramKey}
    * placeholders (e.g. "Pour {bloomWaterG}g of water"), resolved against the
-   * brew's parameters when the timer runs.
+   * brew's parameters when the timer runs. `durationParamKey` links the step's
+   * duration to a time param of the brew (steepTimeS, bloomTimeS…): the timer
+   * reads the planned value from the brew and writes the measured one back.
    */
   stepsJson: text('steps_json', { mode: 'json' })
-    .$type<{ label: string; durationSec?: number; instruction?: string }[]>()
+    .$type<
+      { label: string; durationSec?: number; instruction?: string; durationParamKey?: string }[]
+    >()
     .notNull(),
   notes: text('notes'),
   archivedAt: integer('archived_at', { mode: 'timestamp' }),
@@ -189,4 +193,10 @@ export type Brew = typeof brews.$inferSelect;
 export type NewBrew = typeof brews.$inferInsert;
 export type Recipe = typeof recipes.$inferSelect;
 export type NewRecipe = typeof recipes.$inferInsert;
-export type RecipeStep = { label: string; durationSec?: number; instruction?: string };
+export type RecipeStep = {
+  label: string;
+  durationSec?: number;
+  instruction?: string;
+  /** ParamSpec.key of a seconds param this step's duration is linked to. */
+  durationParamKey?: string;
+};

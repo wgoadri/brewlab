@@ -41,7 +41,12 @@ export interface ParamSpec {
 
 export interface BrewStepTemplate {
   label: string;
+  /** Fallback duration when not linked to a param (or the param is unset). */
   durationSec?: number;
+  /** Optional instruction; may contain {paramKey} placeholders. */
+  instruction?: string;
+  /** Link this step's duration to a seconds param (steepTimeS, bloomTimeS…). */
+  durationParamKey?: string;
 }
 
 export interface MethodDef {
@@ -95,9 +100,9 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
     ],
     defaultSteps: [
       { label: 'Add coffee + bloom', durationSec: 30 },
-      { label: 'Fill & steep', durationSec: 60 },
+      { label: 'Fill & steep', durationSec: 60, durationParamKey: 'steepTimeS' },
       { label: 'Stir', durationSec: 10 },
-      { label: 'Plunge', durationSec: 30 },
+      { label: 'Plunge', durationSec: 30, durationParamKey: 'plungeTimeS' },
     ],
   },
 
@@ -110,7 +115,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
       { key: 'pours', label: 'Number of pours', type: 'int', min: 1, max: 6, step: 1, default: 3, optimizable: true },
     ],
     defaultSteps: [
-      { label: 'Bloom', durationSec: 30 },
+      { label: 'Bloom', durationSec: 30, durationParamKey: 'bloomTimeS' },
       { label: 'Pour 1', durationSec: 30 },
       { label: 'Pour 2', durationSec: 30 },
       { label: 'Drawdown', durationSec: 45 },
@@ -123,7 +128,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
     timerMode: 'guided',
     params: [dose(30), water(500), grind, temp(94), totalTime(240), ...bloom],
     defaultSteps: [
-      { label: 'Bloom', durationSec: 45 },
+      { label: 'Bloom', durationSec: 45, durationParamKey: 'bloomTimeS' },
       { label: 'Pours', durationSec: 120 },
       { label: 'Drawdown', durationSec: 75 },
     ],
@@ -135,7 +140,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
     timerMode: 'guided',
     params: [dose(20), water(320), grind, temp(93), totalTime(180), ...bloom],
     defaultSteps: [
-      { label: 'Bloom', durationSec: 30 },
+      { label: 'Bloom', durationSec: 30, durationParamKey: 'bloomTimeS' },
       { label: 'Pulse pours', durationSec: 90 },
       { label: 'Drawdown', durationSec: 60 },
     ],
@@ -150,7 +155,7 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
       { key: 'steepTimeS', label: 'Steep time', type: 'int', unit: 's', min: 60, max: 900, step: 10, default: 240, optimizable: true },
     ],
     defaultSteps: [
-      { label: 'Steep', durationSec: 240 },
+      { label: 'Steep', durationSec: 240, durationParamKey: 'steepTimeS' },
       { label: 'Break crust & skim', durationSec: 30 },
       { label: 'Plunge & serve', durationSec: 20 },
     ],
@@ -169,8 +174,8 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
       { key: 'basket', label: 'Basket', type: 'text', default: '18g VST' },
     ],
     defaultSteps: [
-      { label: 'Pre-infusion', durationSec: 3 },
-      { label: 'Extraction', durationSec: 25 },
+      { label: 'Pre-infusion', durationSec: 3, durationParamKey: 'preInfusionS' },
+      { label: 'Extraction', durationSec: 25, durationParamKey: 'shotTimeS' },
     ],
   },
 
@@ -197,8 +202,8 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
       { key: 'steepTimeS', label: 'Steep (closed)', type: 'int', unit: 's', min: 0, max: 300, step: 5, default: 60, optimizable: true },
     ],
     defaultSteps: [
-      { label: 'Bloom (open)', durationSec: 30 },
-      { label: 'Fill & steep (closed)', durationSec: 60 },
+      { label: 'Bloom (open)', durationSec: 30, durationParamKey: 'bloomTimeS' },
+      { label: 'Fill & steep (closed)', durationSec: 60, durationParamKey: 'steepTimeS' },
       { label: 'Open & drawdown', durationSec: 60 },
     ],
   },

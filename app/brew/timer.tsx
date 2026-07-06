@@ -8,6 +8,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { db } from '@/db/client';
 import { brews } from '@/db/schema';
 import { METHODS } from '@/lib/methods';
+import { applyMeasuredDurations, buildTimerSteps } from '@/lib/recipeSteps';
 import { getPendingBrew, clearPendingBrew, type BrewDraft } from '@/lib/brewDraft';
 import { Colors } from '@/lib/theme';
 
@@ -46,13 +47,15 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   const router = useRouter();
   useKeepAwake();
 
-  // Recipe steps when one was picked; the method's hardcoded defaults otherwise.
-  const steps = draft.steps?.length ? draft.steps : METHODS[draft.method].defaultSteps;
+  // Prep step + recipe steps (or method defaults), with linked durations read
+  // from the brew's params and {placeholder} instructions resolved.
+  const [steps] = useState(() => buildTimerSteps(draft));
   const timerMode = METHODS[draft.method].timerMode;
 
   const [stepIndex, setStepIndex] = useState(0);
   const [stepStartMs, setStepStartMs] = useState(() => Date.now());
-  const [brewStartMs] = useState(() => Date.now());
+  // Reset when leaving the prep step: grinding time is not brew time.
+  const [brewStartMs, setBrewStartMs] = useState(() => Date.now());
   const [now, setNow] = useState(() => Date.now());
   const [saving, setSaving] = useState(false);
   const [completedMs, setCompletedMs] = useState<number[]>([]);
@@ -63,10 +66,7 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   }, []);
 
   const currentStep = steps[stepIndex];
-  const instruction =
-    'instruction' in currentStep && typeof currentStep.instruction === 'string'
-      ? currentStep.instruction
-      : null;
+  const instruction = currentStep.instruction ?? null;
   const durationMs = (currentStep.durationSec ?? 0) * 1000;
   const stepElapsedMs = now - stepStartMs;
   const totalElapsedMs = now - brewStartMs;
@@ -80,7 +80,9 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
     setCompletedMs((prev) => [...prev, elapsed]);
     if (stepIndex < steps.length - 1) {
       setStepIndex((i) => i + 1);
-      setStepStartMs(Date.now());
+      const now = Date.now();
+      setStepStartMs(now);
+      if (currentStep.isPrep) setBrewStartMs(now);
     }
   }
 
@@ -101,6 +103,8 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   const [pendingResult, setPendingResult] = useState<{
     stepsJson: { label: string; durationSec: number }[];
     totalTimeS: number;
+    /** Aligned with `steps` (prep included) for the param write-back. */
+    measuredSec: number[];
   } | null>(null);
   const [yieldText, setYieldText] = useState('');
 
@@ -108,36 +112,39 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const finalElapsed = Date.now() - stepStartMs;
     const allMs = [...completedMs, finalElapsed];
-    const stepsJson = steps.map((s, i) => ({
-      label: s.label,
-      durationSec: Math.round((allMs[i] ?? 0) / 1000),
-    }));
+    const measuredSec = steps.map((_, i) => Math.round((allMs[i] ?? 0) / 1000));
+    const stepsJson = steps
+      .map((s, i) => ({ label: s.label, durationSec: measuredSec[i], isPrep: s.isPrep }))
+      .filter((s) => !s.isPrep)
+      .map(({ label, durationSec }) => ({ label, durationSec }));
     const totalTimeS = Math.round((Date.now() - brewStartMs) / 1000);
-    setPendingResult({ stepsJson, totalTimeS });
+    setPendingResult({ stepsJson, totalTimeS, measuredSec });
   }
 
   async function saveBrew(finalYieldG?: number) {
     if (!pendingResult) return;
     setSaving(true);
-    const { stepsJson, totalTimeS } = pendingResult;
+    const { stepsJson, totalTimeS, measuredSec } = pendingResult;
+    // Linked steps write their measured time back into the brew's params.
+    const adjusted = applyMeasuredDurations(draft, steps, measuredSec);
     try {
       const result = await db.insert(brews).values({
-        method: draft.method,
-        beanId: draft.beanId,
-        grinderId: draft.grinderId,
-        doseG: draft.doseG,
-        waterG: draft.waterG,
-        ratio: draft.ratio,
-        grindSetting: draft.grindSetting,
-        waterTempC: draft.waterTempC,
-        bloomWaterG: draft.bloomWaterG,
-        bloomTimeS: draft.bloomTimeS,
-        paramsJson: draft.paramsJson,
-        notes: draft.notes,
+        method: adjusted.method,
+        beanId: adjusted.beanId,
+        grinderId: adjusted.grinderId,
+        doseG: adjusted.doseG,
+        waterG: adjusted.waterG,
+        ratio: adjusted.ratio,
+        grindSetting: adjusted.grindSetting,
+        waterTempC: adjusted.waterTempC,
+        bloomWaterG: adjusted.bloomWaterG,
+        bloomTimeS: adjusted.bloomTimeS,
+        paramsJson: adjusted.paramsJson,
+        notes: adjusted.notes,
         totalTimeS,
         stepsJson,
         finalYieldG,
-        recipeId: draft.recipeId,
+        recipeId: adjusted.recipeId,
       });
       router.replace(`/brew/${result.lastInsertRowId}`);
     } catch (e) {
@@ -156,6 +163,8 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
   let advanceBtnLabel: string;
   if (isLastStep) {
     advanceBtnLabel = 'Done';
+  } else if (currentStep.isPrep) {
+    advanceBtnLabel = 'Start brew';
   } else if (timerMode === 'guided') {
     advanceBtnLabel = 'Skip';
   } else {

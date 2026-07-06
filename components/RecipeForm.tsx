@@ -34,13 +34,20 @@ export interface RecipeFormProps {
 }
 
 /** Editable step row state: durations kept as text while typing. */
-type StepRow = { label: string; durationText: string; instruction: string };
+type StepRow = {
+  label: string;
+  durationText: string;
+  instruction: string;
+  /** ParamSpec.key the duration is linked to; null = fixed seconds. */
+  durationParamKey: string | null;
+};
 
 function toRows(steps: RecipeStep[]): StepRow[] {
   return steps.map((s) => ({
     label: s.label,
     durationText: s.durationSec != null ? String(s.durationSec) : '',
     instruction: s.instruction ?? '',
+    durationParamKey: s.durationParamKey ?? null,
   }));
 }
 
@@ -51,8 +58,10 @@ function toSteps(rows: StepRow[]): RecipeStep[] {
       const parsed = parseInt(r.durationText.trim(), 10);
       return {
         label: r.label.trim(),
+        // Kept even when linked: it's the fallback if the brew leaves the param unset.
         durationSec: Number.isFinite(parsed) && parsed > 0 ? parsed : undefined,
         instruction: r.instruction.trim() || undefined,
+        durationParamKey: r.durationParamKey ?? undefined,
       };
     });
 }
@@ -71,6 +80,15 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
   const methodBrewers = useMemo(
     () => brewerList?.filter((b) => b.method === method) ?? [],
     [brewerList, method],
+  );
+
+  // Seconds params a step duration can be linked to (steepTimeS, bloomTimeS…).
+  const timeParams = useMemo(
+    () =>
+      METHODS[method].params.filter(
+        (p) => p.type === 'int' && p.unit === 's' && p.key !== 'totalTimeS',
+      ),
+    [method],
   );
 
   function switchMethod(m: BrewMethod) {
@@ -99,7 +117,10 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
   }
 
   function addRow() {
-    setRows((prev) => [...prev, { label: '', durationText: '', instruction: '' }]);
+    setRows((prev) => [
+      ...prev,
+      { label: '', durationText: '', instruction: '', durationParamKey: null },
+    ]);
   }
 
   async function handleSubmit() {
@@ -232,18 +253,56 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
               placeholder='Step name (e.g. Bloom)'
               placeholderTextColor={Colors.textTertiary}
             />
-            <View style={styles.durationBox}>
-              <TextInput
-                style={styles.durationInput}
-                value={row.durationText}
-                onChangeText={(t) => updateRow(idx, { durationText: t })}
-                keyboardType='numeric'
-                placeholder='–'
-                placeholderTextColor={Colors.textTertiary}
-              />
-              <Text style={styles.durationUnit}>s</Text>
-            </View>
+            {row.durationParamKey === null && (
+              <View style={styles.durationBox}>
+                <TextInput
+                  style={styles.durationInput}
+                  value={row.durationText}
+                  onChangeText={(t) => updateRow(idx, { durationText: t })}
+                  keyboardType='numeric'
+                  placeholder='–'
+                  placeholderTextColor={Colors.textTertiary}
+                />
+                <Text style={styles.durationUnit}>s</Text>
+              </View>
+            )}
           </View>
+          {timeParams.length > 0 && (
+            <View style={styles.linkRow}>
+              <Pressable
+                onPress={() => updateRow(idx, { durationParamKey: null })}
+                style={[styles.linkChip, row.durationParamKey === null && styles.linkChipActive]}
+              >
+                <Text
+                  style={[
+                    styles.linkChipText,
+                    row.durationParamKey === null && styles.linkChipTextActive,
+                  ]}
+                >
+                  Fixed
+                </Text>
+              </Pressable>
+              {timeParams.map((p) => (
+                <Pressable
+                  key={p.key}
+                  onPress={() => updateRow(idx, { durationParamKey: p.key })}
+                  style={[
+                    styles.linkChip,
+                    row.durationParamKey === p.key && styles.linkChipActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.linkChipText,
+                      row.durationParamKey === p.key && styles.linkChipTextActive,
+                    ]}
+                  >
+                    ⏱ {p.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
           <TextInput
             style={[styles.textInput, styles.instructionInput]}
             value={row.instruction}
@@ -344,6 +403,14 @@ const styles = StyleSheet.create({
   },
   addStepText: { color: Colors.accent, fontSize: 14, fontWeight: '600' },
   templateHint: { fontSize: 12, color: Colors.textTertiary, lineHeight: 17, paddingHorizontal: 4 },
+  linkRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  linkChip: {
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radii.chip,
+    backgroundColor: Colors.accentSubtle,
+  },
+  linkChipActive: { backgroundColor: Colors.accent },
+  linkChipText: { fontSize: 12, fontWeight: '500', color: Colors.textSecondary },
+  linkChipTextActive: { fontSize: 12, fontWeight: '600', color: Colors.bgSurface },
   primaryBtn: {
     marginTop: Spacing.xxl, backgroundColor: Colors.accent, borderRadius: Radii.button,
     paddingVertical: 16, alignItems: 'center',
