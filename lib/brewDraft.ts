@@ -14,6 +14,8 @@ export type BrewDraft = {
   bloomTimeS?: number;
   paramsJson?: Record<string, number | string | boolean>;
   notes?: string;
+  /** Measured output weight (g); entered after the timer or via edit. */
+  finalYieldG?: number;
 };
 
 let _pending: BrewDraft | null = null;

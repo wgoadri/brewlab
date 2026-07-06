@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -91,8 +91,15 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
 
-  async function onDone() {
-    setSaving(true);
+  // Set when Done is pressed: freezes the recorded times while the (optional)
+  // final-yield prompt is shown. The brew is inserted from these values.
+  const [pendingResult, setPendingResult] = useState<{
+    stepsJson: { label: string; durationSec: number }[];
+    totalTimeS: number;
+  } | null>(null);
+  const [yieldText, setYieldText] = useState('');
+
+  function onDone() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const finalElapsed = Date.now() - stepStartMs;
     const allMs = [...completedMs, finalElapsed];
@@ -101,6 +108,13 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
       durationSec: Math.round((allMs[i] ?? 0) / 1000),
     }));
     const totalTimeS = Math.round((Date.now() - brewStartMs) / 1000);
+    setPendingResult({ stepsJson, totalTimeS });
+  }
+
+  async function saveBrew(finalYieldG?: number) {
+    if (!pendingResult) return;
+    setSaving(true);
+    const { stepsJson, totalTimeS } = pendingResult;
     try {
       const result = await db.insert(brews).values({
         method: draft.method,
@@ -117,12 +131,18 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
         notes: draft.notes,
         totalTimeS,
         stepsJson,
+        finalYieldG,
       });
       router.replace(`/brew/${result.lastInsertRowId}`);
     } catch (e) {
       Alert.alert('Save failed', e instanceof Error ? e.message : String(e));
       setSaving(false);
     }
+  }
+
+  function onSaveWithYield() {
+    const parsed = parseFloat(yieldText.replace(',', '.'));
+    saveBrew(Number.isFinite(parsed) && parsed > 0 ? parsed : undefined);
   }
 
   const countdownWarning = timerMode === 'guided' && remaining < 5000 && remaining > 0;
@@ -134,6 +154,40 @@ function TimerContent({ draft }: { draft: BrewDraft }) {
     advanceBtnLabel = 'Skip';
   } else {
     advanceBtnLabel = 'Next';
+  }
+
+  if (pendingResult) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <View style={styles.stepInfo}>
+          <Text style={styles.stepCounter}>Brew finished · {formatMs(pendingResult.totalTimeS * 1000)}</Text>
+          <Text style={styles.stepLabel}>Final yield?</Text>
+          <Text style={styles.yieldHint}>Weight of coffee in the cup — skip if you didn’t measure.</Text>
+        </View>
+        <View style={styles.yieldRow}>
+          <TextInput
+            style={styles.yieldInput}
+            value={yieldText}
+            onChangeText={setYieldText}
+            keyboardType='decimal-pad'
+            placeholder='0'
+            placeholderTextColor={Colors.textTertiary}
+            autoFocus
+          />
+          <Text style={styles.yieldUnit}>g</Text>
+        </View>
+        <Pressable
+          style={[styles.btn, saving && styles.btnDisabled]}
+          onPress={onSaveWithYield}
+          disabled={saving}
+        >
+          <Text style={styles.btnText}>Save brew</Text>
+        </Pressable>
+        <Pressable onPress={() => saveBrew(undefined)} disabled={saving}>
+          <Text style={styles.skipText}>Skip</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -240,5 +294,39 @@ const styles = StyleSheet.create({
     color: Colors.timerText,
     fontSize: 18,
     fontWeight: '600',
+  },
+  yieldHint: {
+    color: Colors.textSecondary,
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  yieldRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  yieldInput: {
+    color: Colors.timerText,
+    fontSize: 64,
+    fontWeight: '300',
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -1,
+    minWidth: 120,
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.timerTrack,
+    paddingBottom: 4,
+  },
+  yieldUnit: {
+    color: Colors.textSecondary,
+    fontSize: 24,
+    fontWeight: '300',
+  },
+  skipText: {
+    color: Colors.textSecondary,
+    fontSize: 15,
+    fontWeight: '500',
+    padding: 8,
   },
 });
