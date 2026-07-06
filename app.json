@@ -11,7 +11,8 @@
       "supportsTablet": true
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.wgoadri.brewlab"
     },
     "web": {
       "bundler": "metro",
@@ -20,10 +21,18 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a1642cb7-af39-48ac-a65c-22f03b03e175"
+      }
+    },
+    "owner": "wgoadri"
   }
 }
