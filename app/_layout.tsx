@@ -49,6 +49,8 @@ export default function RootLayout() {
           <Stack.Screen name="beans/[id]" options={{ title: 'Edit bean' }} />
           <Stack.Screen name="brewers/[id]" options={{ title: 'Edit brewer' }} />
           <Stack.Screen name="grinders/[id]" options={{ title: 'Edit grinder' }} />
+          <Stack.Screen name="recipes/new" options={{ title: 'New recipe', presentation: 'modal' }} />
+          <Stack.Screen name="recipes/[id]" options={{ title: 'Edit recipe' }} />
           <Stack.Screen name="brew/[id]" options={{ title: 'Brew' }} />
           <Stack.Screen name="brew/edit" options={{ title: 'Edit brew', presentation: 'modal' }} />
           <Stack.Screen name="brew/timer" options={{ title: 'Timer', headerShown: false }} />

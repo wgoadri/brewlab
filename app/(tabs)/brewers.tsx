@@ -6,7 +6,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db } from '@/db/client';
-import { brewers, grinders } from '@/db/schema';
+import { brewers, grinders, recipes } from '@/db/schema';
 import { exportData, importData } from '@/lib/exportImport';
 import { METHODS, type BrewMethod } from '@/lib/methods';
 import { Colors, Radii, Spacing } from '@/lib/theme';
@@ -15,6 +15,9 @@ export default function GearScreen() {
   const router = useRouter();
   const { data: brewerList } = useLiveQuery(db.select().from(brewers).orderBy(desc(brewers.createdAt)));
   const { data: grinderList } = useLiveQuery(db.select().from(grinders).orderBy(desc(grinders.createdAt)));
+  const { data: recipeList } = useLiveQuery(
+    db.query.recipes.findMany({ with: { brewer: true }, orderBy: [desc(recipes.createdAt)] })
+  );
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -103,6 +106,30 @@ export default function GearScreen() {
             <Text style={styles.muted}>No grinders yet.</Text>
           </View>
         )}
+        {/* Recipes */}
+        <View style={[styles.sectionHeader, { marginTop: Spacing.xxl }]}>
+          <Text style={styles.sectionLabel}>Recipes</Text>
+          <Link href="/recipes/new" asChild>
+            <Pressable><Text style={styles.addLink}>Add</Text></Pressable>
+          </Link>
+        </View>
+        {recipeList && recipeList.length > 0 ? (
+          recipeList.map((item) => (
+            <Pressable key={item.id} style={styles.card} onPress={() => router.push(`/recipes/${item.id}`)}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.muted}>
+                {METHODS[item.method as BrewMethod]?.label ?? item.method}
+                {item.brewer ? ` · ${item.brewer.name}` : ''}
+                {` · ${item.stepsJson.length} step${item.stepsJson.length !== 1 ? 's' : ''}`}
+              </Text>
+            </Pressable>
+          ))
+        ) : (
+          <View style={styles.empty}>
+            <Text style={styles.muted}>No recipes yet — the timer uses each method’s default steps.</Text>
+          </View>
+        )}
+
         {/* Data */}
         <View style={[styles.sectionHeader, { marginTop: Spacing.xxl }]}>
           <Text style={styles.sectionLabel}>Data</Text>
