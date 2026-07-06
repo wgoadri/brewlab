@@ -1,19 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Named volumes always initialise root-owned on first mount (regardless of the
-# host filesystem), so give them to `node`. This is the ONE chown we still need —
-# /workspace is on WSL2 ext4 with matching UIDs, so it needs nothing.
-sudo chown -R node:node /home/node/.claude /home/node/.history 2>/dev/null || true
-
+# Running as root → no ownership juggling, no chown, no permission errors.
 git config --global --add safe.directory /workspace || true
 
 # Project shell aliases (idempotent).
-if ! grep -q 'brewlab aliases' /home/node/.zshrc 2>/dev/null; then
-  cat >> /home/node/.zshrc <<'ZRC'
+if ! grep -q 'brewlab aliases' /root/.zshrc 2>/dev/null; then
+  cat >> /root/.zshrc <<'ZRC'
 
 # brewlab aliases
-export EDITOR=nano
+export EDITOR=vim
 alias es="npx expo start"
 alias est="npx expo start --tunnel"
 alias ni="npm install"

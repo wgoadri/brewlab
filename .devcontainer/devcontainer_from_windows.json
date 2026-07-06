@@ -6,13 +6,14 @@
   // need, etc. The `4-` major is correct for javascript-node (`1-` does not exist).
   "image": "mcr.microsoft.com/devcontainers/javascript-node:4-24-bookworm",
 
-  // Run as the image's non-root `node` user (UID 1000). On WSL2 ext4 that matches
-  // your host user, so files created in the container are owned by you and vice
-  // versa — no permission friction in either direction, and you can run Metro
-  // directly in WSL2 against the same files. (Root was only needed back when the
-  // project lived on a Windows drive; that's no longer the case.)
-  "containerUser": "node",
-  "remoteUser": "node",
+  // --- The one decision that ends the permission errors ---------------------
+  // Run as root. /workspace is bind-mounted from the host; on Windows drives
+  // every file in the container is owned by root, so a non-root user literally
+  // cannot write into /workspace (that was the EACCES on node_modules). Running
+  // as root removes the entire problem. root *inside* the container is NOT root
+  // on your machine — the container is still the isolation boundary.
+  "containerUser": "root",
+  "remoteUser": "root",
 
   // Installs Claude Code (latest).
   "features": {
@@ -24,8 +25,8 @@
 
   // Persist only Claude auth + shell history across rebuilds.
   "mounts": [
-    "source=brewlab-claude-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=brewlab-history-${devcontainerId},target=/home/node/.history,type=volume"
+    "source=brewlab-claude-${devcontainerId},target=/root/.claude,type=volume",
+    "source=brewlab-history-${devcontainerId},target=/root/.history,type=volume"
   ],
 
   "forwardPorts": [8081, 19000, 19001, 19002, 19006],
@@ -37,8 +38,12 @@
 
   "containerEnv": {
     "SHELL": "/usr/bin/zsh",
-    "HISTFILE": "/home/node/.history/.zsh_history",
-    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+    "HISTFILE": "/root/.history/.zsh_history",
+    "CLAUDE_CONFIG_DIR": "/root/.claude",
+    // We ARE in a real sandboxed container, so this lets Claude Code's
+    // bypass-permissions mode run as root (it otherwise refuses). This is what
+    // gives you prompt-free editing; the deny-list still applies on top.
+    "IS_SANDBOX": "1"
   },
 
   // Forward the host SSH agent so git fetch/clone can authenticate without
