@@ -15,6 +15,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { db } from '@/db/client';
 import { brewers, type RecipeStep } from '@/db/schema';
 import { METHOD_LIST, METHODS, type BrewMethod } from '@/lib/methods';
+import { previewInstruction, unknownPlaceholders } from '@/lib/recipeSteps';
 import { Colors, Radii, Spacing } from '@/lib/theme';
 
 export interface RecipeFormValues {
@@ -121,6 +122,16 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
       ...prev,
       { label: '', durationText: '', instruction: '', durationParamKey: null },
     ]);
+  }
+
+  function insertPlaceholder(idx: number, key: string) {
+    setRows((prev) =>
+      prev.map((r, i) => {
+        if (i !== idx) return r;
+        const needsSpace = r.instruction.length > 0 && !/\s$/.test(r.instruction);
+        return { ...r, instruction: `${r.instruction}${needsSpace ? ' ' : ''}{${key}}` };
+      }),
+    );
   }
 
   async function handleSubmit() {
@@ -311,6 +322,27 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
             placeholderTextColor={Colors.textTertiary}
             multiline
           />
+          <View style={styles.insertRow}>
+            {METHODS[method].params.map((p) => (
+              <Pressable
+                key={p.key}
+                onPress={() => insertPlaceholder(idx, p.key)}
+                style={styles.insertChip}
+              >
+                <Text style={styles.insertChipText}>{p.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {row.instruction.trim().length > 0 && (
+            <Text style={styles.previewText}>
+              Preview: {previewInstruction(row.instruction, method)}
+            </Text>
+          )}
+          {unknownPlaceholders(row.instruction, method).length > 0 && (
+            <Text style={styles.warnText}>
+              Unknown: {unknownPlaceholders(row.instruction, method).map((k) => `{${k}}`).join(', ')}
+            </Text>
+          )}
         </View>
       ))}
       <Pressable style={styles.addStepBtn} onPress={addRow}>
@@ -411,6 +443,14 @@ const styles = StyleSheet.create({
   linkChipActive: { backgroundColor: Colors.accent },
   linkChipText: { fontSize: 12, fontWeight: '500', color: Colors.textSecondary },
   linkChipTextActive: { fontSize: 12, fontWeight: '600', color: Colors.bgSurface },
+  insertRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  insertChip: {
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radii.chip,
+    backgroundColor: Colors.accentSubtle,
+  },
+  insertChipText: { fontSize: 11, fontWeight: '500', color: Colors.textSecondary },
+  previewText: { fontSize: 12, color: Colors.textTertiary, lineHeight: 16 },
+  warnText: { fontSize: 12, color: Colors.destructive, lineHeight: 16 },
   primaryBtn: {
     marginTop: Spacing.xxl, backgroundColor: Colors.accent, borderRadius: Radii.button,
     paddingVertical: 16, alignItems: 'center',

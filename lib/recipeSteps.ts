@@ -11,7 +11,7 @@
 
 import type { RecipeStep } from '@/db/schema';
 import type { BrewDraft } from './brewDraft';
-import { METHODS } from './methods';
+import { METHODS, type BrewMethod } from './methods';
 
 export interface TimerStep {
   label: string;
@@ -40,6 +40,41 @@ export function draftParamValue(
 export function resolveInstruction(template: string, draft: BrewDraft): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) => {
     const v = draftParamValue(draft, key);
+    return v != null ? String(v) : match;
+  });
+}
+
+/** All placeholder keys valid for a method (its ParamSpec keys). */
+export function methodParamKeys(method: BrewMethod): string[] {
+  return METHODS[method].params.map((p) => p.key);
+}
+
+/** The distinct {key} tokens present in a template. */
+export function extractPlaceholders(template: string): string[] {
+  const keys = new Set<string>();
+  for (const match of template.matchAll(/\{(\w+)\}/g)) {
+    keys.add(match[1]);
+  }
+  return [...keys];
+}
+
+/** Placeholders in the template that are NOT params of the method. */
+export function unknownPlaceholders(template: string, method: BrewMethod): string[] {
+  const known = new Set(methodParamKeys(method));
+  return extractPlaceholders(template).filter((key) => !known.has(key));
+}
+
+/**
+ * Resolve {key} against the method's DEFAULT param values, for an editor preview.
+ * Keys with no default (e.g. grindSetting) stay as the literal {key}.
+ */
+export function previewInstruction(template: string, method: BrewMethod): string {
+  const defaults = new Map<string, number | string | boolean>();
+  for (const spec of METHODS[method].params) {
+    if (spec.default !== undefined) defaults.set(spec.key, spec.default);
+  }
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => {
+    const v = defaults.get(key);
     return v != null ? String(v) : match;
   });
 }
