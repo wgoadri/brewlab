@@ -14,6 +14,9 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 
 import { db } from '@/db/client';
 import { brewers, type RecipeStep } from '@/db/schema';
+import { useRouter } from 'expo-router';
+
+import { hasGuide } from '@/lib/brewingGuide';
 import { METHOD_LIST, METHODS, type BrewMethod } from '@/lib/methods';
 import { previewInstruction, unknownPlaceholders } from '@/lib/recipeSteps';
 import { Colors, Radii, Spacing } from '@/lib/theme';
@@ -68,6 +71,7 @@ function toSteps(rows: StepRow[]): RecipeStep[] {
 }
 
 export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit }: RecipeFormProps) {
+  const router = useRouter();
   const [name, setName] = useState(initial?.name ?? '');
   const [method, setMethod] = useState<BrewMethod>(initial?.method ?? 'aeropress');
   const [brewerId, setBrewerId] = useState<number | null>(initial?.brewerId ?? null);
@@ -224,7 +228,14 @@ export function RecipeForm({ initial, lockMethod = false, submitLabel, onSubmit 
       </View>
 
       {/* Steps */}
-      <Text style={styles.sectionHeader}>Steps</Text>
+      <View style={styles.stepsHeaderRow}>
+        <Text style={styles.sectionHeader}>Steps</Text>
+        {hasGuide(method) && (
+          <Pressable onPress={() => router.push(`/guide/${method}`)} hitSlop={8}>
+            <Text style={styles.guideLink}>📖 {METHODS[method].label} guide</Text>
+          </Pressable>
+        )}
+      </View>
       {rows.map((row, idx) => (
         <View key={idx} style={styles.stepCard}>
           <View style={styles.stepHeaderRow}>
@@ -435,6 +446,8 @@ const styles = StyleSheet.create({
   },
   addStepText: { color: Colors.accent, fontSize: 14, fontWeight: '600' },
   templateHint: { fontSize: 12, color: Colors.textTertiary, lineHeight: 17, paddingHorizontal: 4 },
+  stepsHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  guideLink: { fontSize: 13, fontWeight: '600', color: Colors.accent, marginTop: Spacing.lg, marginBottom: Spacing.sm },
   linkRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   linkChip: {
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radii.chip,

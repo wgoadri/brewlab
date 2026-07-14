@@ -1,0 +1,47 @@
+year,rank,competitor,country,position,dose_g,brew_water_g,brew_temp_c,bypass_g,total_water_g,ratio,press_start_s,total_time_s,bloom,agitation,filters_n,filter_type,grind_note,notes
+2025,1,Némo Pop,Australia,upright,18,100,84,70,170,9.4,50,70,no,stir NSNS-WEWE @25s,2,paper (flow control cap),"Comandante Trailmaster 31 clicks, sifted 200um","bypass water at 50C, poured in carafe first"
+2025,2,Jan Ahrend,Switzerland,inverted,18,100,88,86,186,10.3,90,150,no,stir 5x NSWE,2,"paper, rinsed","Comandante C40 Mk4, 24 clicks","press to 66g output, dilute to 152g final"
+2025,3,Dharun Vyas,India,inverted,16,208,88,12,220,13.8,,,20s @65ml,"spirals, 4-5 swirls",1,paper (flow control cap),"Comandante C40 Red Clix, 52 clicks",press over 1:00; 87ppm
+2024,1,George Stanica,Romania,inverted,18,100,96,55,155,8.6,95,,30s @50g,stir NSEW 10s,1,"Aesir, rinsed","Comandante C40 Mk4 Red Clix, 58 clicks (870um)",output 76-79g; dilute hot then RT to ~155-165g
+2024,2,Sophan Nugraha,Indonesia,inverted,18,190,95,10,200,11.1,90,120,60ml RT bloom,stir 8x,2,"Cafec paper, rinsed","Comandante C40 nitro, 22 clicks",bloom water is room temperature
+2024,3,Jamika Mahmoud,Egypt,inverted,18,150,80,30,180,10.0,90,120,60s @50ml,stir 5x then 20x,2,"paper, rinsed","Comandante Mk4, 900 microns",two temps: 50ml@80C + 100ml@75C
+2023,1,Tay Wipvasutt,Thailand,inverted,18,100,89,80,180,10.0,95,125,no,stir 5s @0:30 and @0:55,1,"paper, rinsed","1Zpresso ZP6, 65 clicks",split dose 16g + 2g @0:45; output ~75g
+2023,2,Carlo Graf Bülow,Germany,inverted,18,160,100,15,175,9.7,95,110,50g @0:00,stir 32x fast @0:15,2,classic paper,"Comandante C40, 32 clicks","output 135g, dilute to 150g; 100C water"
+2023,3,Leon Zhang,China,upright,18,235,93,0,235,13.1,,105,no,stir 15x then 5x,2,1 cotton + 1 linen,"Comandante C40, 27 clicks",two-stage brew+press: 100g@93C then 135g@75C
+2022,1,Jibbi Little,Australia,inverted,18,94,90,90,184,10.2,100,130,no,stir 35x gently,1,"classic paper, rinsed","two grinders (Timemore + Kinu 4), fines sifted out",target TDS 1.30-1.35; optional ice balls
+2022,2,Simon Derutter,Belgium,upright,18,140,85,46,186,10.3,75,105,no,stir 3x + plunger vacuum,1,"Aesir, dry","Comandante, 23 clicks",sources disagree: 85C/156ml (WAC) vs 90C/186g (aeropress.com)
+2022,3,Jennifer Rui Ping Ho,Singapore,inverted,18,200,84,0,200,11.1,90,120,30s @100ml,stir gently 2x,1,"classic paper, dry","Comandante, 30 clicks",no bypass
+2021,1,Tuomas Merikanto,Finland,inverted,18,200,80,0,200,11.1,100,120,no,"stir 3x, then 3x @0:50",2,"paper, rinsed","Macap Labo 70D, 7.0",Third Wave Water F2 (100% espresso); swirl to cool
+2021,2,Maru Mallee,Netherlands,inverted,18,150,93,36,186,10.3,115,135,no,stir 20x firmly,1,"paper, rinsed","Macap Labo 70D, 6.7",dilute with room-temp water; TWW F6
+2021,3,Brandon Smith,South Africa,inverted,18,140,88,80,220,12.2,90,120,no,stir 5x gently,1,"paper, rinsed","Macap Labo 70D, 3.3",press through the hiss; TWW F4
+2019,1,Wendelien van Bunnik,Netherlands,inverted,30,100,92,120,220,7.3,40,60,no,stir 20x firmly 10s,1,"Aesir, rinsed","Mahlkonig EK43S, 7/10",output ~60g; dilute to taste; cool to 60C
+2019,2,Benja Khemacheva,Thailand,inverted,35,100,94,110,210,6.0,75,105,no,stir 15s + wiggle 10s,2,1 paper + 1 metal,"Mahlkonig EK43S, 8/10",bypass water pre-loaded in server
+2019,3,Alexis Gagnaire,France,inverted,30,135,88,120,255,8.5,80,90,no,stir 3x @25s,1,"Aesir, rinsed","Comandante, 34 clicks",two presses; mixes hot + room-temp water
+2018,1,Carolina Ibarra Garay,USA,inverted,34.9,100,85,100,200,5.7,60,90,no,stir 30s with chopsticks,1,"paper, rinsed","Mahlkonig EK43S, 8/10",bypass = 60g@85C + 40g RT; don't preheat server
+2018,2,Xiaobo Zhang,China,inverted,31,170,80,50,220,7.1,30,75,no,stir 15s,1,"Kalita 95mm, rinsed cold","DM Grind 2, 10/10",adds 1g espresso-fine coffee before pressing
+2018,3,Evgeni Pinchukov,Belarus,upright,15,230,80,0,230,15.3,65,,yes @50g,"stir after bloom, stir @1:05",2,"paper, rinsed","Comandante, 8/10",stop press when grounds break the surface
+2017,1,Paulina Miczka,England,inverted,35,150,84,200,370,10.6,65,95,no,stir continuously 20s,1,"paper, pre-wet","EK43, 8/10","concentrate 90ml @ 4.5% TDS, then big bypass"
+2017,2,Yusuke Narisawa,Japan,inverted,29.5,170,85,75,245,8.3,,110,no,stir 20x,2,"paper, wet","EK43, 9/10",28g coarse + 1.5g very fine powder
+2017,3,Jeongsu Park,South Korea,upright,30,150,86,150,300,10.0,105,,no,stir 6x then 5x,2,1 metal + 1 paper,"EK43, 3/10",stated total 230g conflicts with steps (300g)
+2016,1,Filip Kucharczyk,Poland,inverted,35,150,81,110,260,7.4,60,,no,stir to 0:30 + swirl,1,"paper, rinsed",coarse,
+2016,2,Jerome Dittmar,France,,20,230,,0,230,11.5,70,110,20s @40g,none stated,,,"EK43, 7.5",water temp not published
+2016,3,Hugo Sousa Rocco,Brazil,,27,170,82,30,200,7.4,210,240,1min @60g,stir 12s,,,"medium-coarse, like V60",very long steep (3.5 min)
+2015,1,Lukas Zahradnik,Slovakia,inverted,20,230,79,0,230,11.5,50,95,30s @60g,turbulent wiggle 15s,1,paper,"EK43, 7.3",
+2015,2,Nick Hatch,Canada,upright,17.5,260,85,0,260,14.9,45,105,25s @50-60g,stir 5x,1,paper,"Baratza Virtuoso, 17",press into a chilled cup
+2015,3,Kaye Joy Ong,Philippines,inverted,22.5,280,79,0,280,12.4,65,95,30s @56g,none stated,1,paper,"EK43, 4",
+2014,1,Shuichi Sasaki,Japan,upright,16.5,250,78,0,250,15.2,25,100,25s @40g,stir 5x then 1x,1,"paper, rinsed","EK43, 9.5",press very slowly 75s; leave 45g slurry
+2014,2,Martin Karabinos,Slovakia,upright,18.5,215,92,0,215,11.6,180,210,3min @80g @35C,"stir well, then 1x",1,paper,"EK43, 6.2","cold steep 3min @35C, then hot water"
+2014,3,Jeff Verellen,Belgium,inverted,17.5,270,76,0,270,15.4,90,120,30s @40g @82C,shake if dry spots,1,paper,"EK43, 8, super-fines removed",82C bloom then 76C; 60s slow pour
+2013,1,Jeff Verellen,Belgium,,17,270,79,0,270,15.9,40,70,40s @50ml @83C,none stated,1,paper,not stated,leave ~50g slurry in brewer
+2013,2,Wille Yli-Luoma,Finland,,17,240,98,0,240,14.1,95,120,no,stir 3x,,,coarse,98C - hottest recipe on record
+2013,3,Tibor Varady,Hungary,inverted,12,200,90,0,200,16.7,120,,no,stir 5x vigorously,1,"paper, pre-wet",quite coarse,lowest dose on record; bodyweight press
+2012,1,Charlene de Buysere,Belgium,upright,18.3,250,85,0,250,13.7,,,30s @40g,none stated,1,"paper, rinsed",coarse,don't press all the way
+2012,2,Ingri Margrethe Johnsen,Norway,inverted,17,260,90,0,260,15.3,50,70,no,none (no stirring),1,"paper, rinsed",fine,96C pour = ~90C brew; hold back the fines
+2011,1,Jeff Verellen,Belgium,upright,17,270,80,0,270,15.9,90,150,30s @40g,none stated,1,"paper, rinsed",coarse,slow drip-then-press; discard last 50g
+2011,2,Joshua Wismans,USA,upright,20,,,0,,,30,40,no,stir before press,,,"Ditting 4.5, finer than drip",water amount = 'one plunger'
+2010,1,Marie Hagemeister,Denmark,inverted,20,,80,0,,,,,no,stir 10-12s,1,"paper, rinsed",slightly finer than filter,'fill almost to the top'
+2010,2,Jeppe Hasager,Denmark,inverted,18,230,75,0,230,12.8,75,105,no,stir 10s gently,1,"paper, rinsed","3.25 Brew Bar, coarser than filter",lowest temp on record
+2010,3,Jeff Verellen,Belgium,,20,,82,0,,,90,150,30s slow pour,rotate base while pouring,1,"paper, rinsed","Ditting 4, finer than filter",blind press to preheat
+2009,1,Lukasz Jura,Poland,inverted,19.5,200,75,0,200,10.3,15,20,no,stir 4x,1,"paper, soaked",slightly coarser than filter,~15s total contact - shortest on record
+2009,2,Ben Kaminsky,USA,inverted,14,190,,0,190,13.6,50,75,no,stir once,1,"paper, rinsed",slightly finer than filter,~30s off boil; blind press to preheat
+2009,3,Alexander Scheen Jensen,Norway,upright,20,,,0,,,30,,5s,circulate,1,"paper, soaked",filter grind,"measured by plunger marks, not scale"

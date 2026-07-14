@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db } from '@/db/client';
 import { brewers, grinders, recipes } from '@/db/schema';
+import { GUIDE_LIST } from '@/lib/brewingGuide';
 import { exportData, importData } from '@/lib/exportImport';
 import { METHODS, type BrewMethod } from '@/lib/methods';
 import { Colors, Radii, Spacing } from '@/lib/theme';
@@ -129,6 +130,21 @@ export default function GearScreen() {
             <Text style={styles.muted}>No recipes yet — the timer uses each method’s default steps.</Text>
           </View>
         )}
+
+        {/* Learn */}
+        <View style={[styles.sectionHeader, { marginTop: Spacing.xxl }]}>
+          <Text style={styles.sectionLabel}>Learn</Text>
+        </View>
+        {GUIDE_LIST.map((guide) => (
+          <Pressable
+            key={guide.method}
+            style={styles.card}
+            onPress={() => router.push(`/guide/${guide.method}`)}
+          >
+            <Text style={styles.cardTitle}>📖 {METHODS[guide.method].label} brewing guide</Text>
+            <Text style={styles.muted}>Step-by-step reference, drawn from championship recipes.</Text>
+          </Pressable>
+        ))}
 
         {/* Data */}
         <View style={[styles.sectionHeader, { marginTop: Spacing.xxl }]}>

@@ -100,6 +100,19 @@ intentional prose). Revisit if either becomes annoying in use.
   `OptimizerStrategy` interface (the CLAUDE.md target); `suggestNextBrew` picks it
   once enough rated brews exist. No call-site changes.
 
+### Track D — Brewing guide
+
+- **D1 · In-app AeroPress guide** ✅ DONE — `docs/aeropress_brewing_guide.md` distilled
+  into structured data (`lib/brewingGuide.ts`) and rendered natively by
+  `app/guide/[method].tsx` (sticky jump-nav, no markdown dependency). Linked from the
+  recipe form (AeroPress only, next to the Steps header) and a "Learn" section in the
+  Gear tab. Method-keyed so other methods can add guides later.
+- **D2 · Inline param hints** *(future; folds into Track A)* — surface each param's
+  typical value + range (from the guide's Appendix) as inline hints in the brew/recipe
+  forms. Same data the Track A reference bands need — build once, use both places.
+- **D3 · "Start from the champion median" template** *(future)* — one-tap prefill of the
+  guide's `starter` recipe in the recipe form.
+
 ---
 
 ## Open questions
