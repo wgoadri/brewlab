@@ -350,8 +350,668 @@ const aeropress: BrewingGuide = {
     'Source: 46 World AeroPress Championship podium recipes, 2009–2025 (worldaeropresschampionship.com, aeropress.com). Ranges are what champions did, not what’s possible.',
 };
 
+// ── Shared blocks ────────────────────────────────────────────────────────────
+
+const PERCOLATION_NOTE =
+  'A percolation brewer: fresh water passes through the bed and leaves. Extraction is continuous and **you can still correct it mid-brew** — pour rate, agitation and pour count are all live levers. This is the opposite of the AeroPress, where contact time is the only thing you control once water lands.';
+
+const GRIND_NOTE =
+  'Store **grind as a free-text note plus the grinder, not a number.** Settings are not comparable across grinders; a non-comparable number poisons any correlation computed from it.';
+
+// ── V60 ──────────────────────────────────────────────────────────────────────
+
+const v60: BrewingGuide = {
+  method: 'v60',
+  title: 'The V60 Pour, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'Five decisions, and a bed you have to keep even.',
+      blocks: [
+        { kind: 'para', text: 'Configure → Dose → Water → Bloom → Pour → Drawdown.' },
+        { kind: 'note', text: PERCOLATION_NOTE },
+        {
+          kind: 'para',
+          text: 'The cone + spiral ribs + big single hole mean **the paper does not meter the flow — the coffee bed does.** Grind and pour technique therefore set contact time indirectly, which is why V60 recipes feel fussier than their parameter count suggests.',
+        },
+      ],
+    },
+    {
+      id: 'configure',
+      step: '1',
+      title: 'Configure',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Rinse the filter** — removes paper taste and preheats the cone. Rarely skipped.',
+            '**Material** — plastic holds heat best, ceramic needs preheating, glass and metal sit between.',
+            '**Filter type** — tabbed/untabbed is cosmetic; bleached vs natural is not (natural paper needs a longer rinse).',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '2',
+      title: 'Dose & grind',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '15 g' },
+            { label: 'Typical ratio', value: '1:16–1:17' },
+            { label: 'Grind', value: 'Medium-fine' },
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'water',
+      step: '3',
+      title: 'Water',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical temp', value: '92–96 °C' },
+            { label: 'Minerals', value: '50–150 ppm' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Percolation forgives heat in a way immersion does not — spent water leaves rather than sitting on the grounds, so the V60 runs ~8 °C hotter than the AeroPress median and gets away with it.',
+        },
+      ],
+    },
+    {
+      id: 'bloom',
+      step: '4',
+      title: 'Bloom',
+      tagline: 'Not optional here.',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Bloom water', value: '2–3× dose' },
+            { label: 'Bloom time', value: '30–45 s' },
+          ],
+        },
+        {
+          kind: 'note',
+          text: 'Unlike the AeroPress — where only 20 of 46 champions bloomed, because stirring solves the same problem — **percolation has no substitute.** Trapped CO₂ channels water around the grounds and you cannot stir it out mid-drawdown.',
+        },
+      ],
+    },
+    {
+      id: 'pour',
+      step: '5',
+      title: 'Pour',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Pulse** — several small pours. More agitation, more extraction, longer total.',
+            '**Continuous** — one slow pour after the bloom. Gentler, faster, cleaner.',
+            '**Spiral vs centre** — spiral wets the walls, centre keeps fines in the middle.',
+          ],
+        },
+        { kind: 'facts', items: [{ label: 'Pours', value: '1–6, typically 3' }] },
+      ],
+    },
+    {
+      id: 'drawdown',
+      step: '6',
+      title: 'Drawdown',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Total time', value: '2:30–3:00' },
+            { label: 'Final bed', value: 'Flat, no high-water ring' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Total time is **observed, not set** — it falls out of grind, dose and pour rate. Log it as an outcome; a stall or a sprint is the diagnosis, not the dial.',
+        },
+      ],
+    },
+  ],
+  starter:
+    '15 g · 250 g at 94 °C · medium-fine · rinse filter · bloom 45 g / 30 s · 3 pours · drawdown by 2:45',
+  debugging: [
+    { symptom: 'Bitter, drying', first: 'Coarsen', then: 'Fewer/gentler pours; drop temp 2 °C' },
+    { symptom: 'Sour, thin', first: 'Finer', then: 'More pours; raise temp 2 °C' },
+    { symptom: 'Stalls, drains slowly', first: 'Coarsen', then: 'Less agitation; check for fines' },
+    { symptom: 'Drains too fast, weak', first: 'Finer', then: 'Slow the pour' },
+    { symptom: 'Grounds high on the wall', first: 'Spiral pour to wash them down', then: 'Swirl after the last pour' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── Chemex ───────────────────────────────────────────────────────────────────
+
+const chemex: BrewingGuide = {
+  method: 'chemex',
+  title: 'The Chemex Pour, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'A V60 with a much thicker coat.',
+      blocks: [
+        { kind: 'para', text: 'Configure → Dose → Water → Bloom → Pour → Drawdown.' },
+        { kind: 'note', text: PERCOLATION_NOTE },
+        {
+          kind: 'para',
+          text: 'The defining variable is **the filter — 2–3× the weight of a V60 paper.** It removes almost all oils and fines (the famous clarity), and it throttles flow enough that you must grind coarser than a cone to avoid a stall. Everything else follows from that.',
+        },
+      ],
+    },
+    {
+      id: 'configure',
+      step: '1',
+      title: 'Configure',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Rinse thoroughly** — thick paper, real paper taste. Longer rinse than a V60.',
+            '**Three folds toward the spout** — that side is the thick one; the channel it leaves is the air vent.',
+            '**Preheat** — the glass is a large thermal mass and the rinse does it for free.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '2',
+      title: 'Dose & grind',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '30 g' },
+            { label: 'Typical ratio', value: '1:16–1:17' },
+            { label: 'Grind', value: 'Medium-coarse — coarser than V60' },
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'brew',
+      step: '3',
+      title: 'Water, bloom & pour',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical temp', value: '93–96 °C' },
+            { label: 'Bloom', value: '2× dose, 45 s' },
+            { label: 'Total time', value: '4:00–5:00' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Larger batches mean a deeper bed and a longer brew. Keep the slurry moving in pulses rather than one flood — a deep bed compacts, and a compacted Chemex bed is the classic stall.',
+        },
+      ],
+    },
+  ],
+  starter: '30 g · 500 g at 94 °C · medium-coarse · rinse well · bloom 60 g / 45 s · pulse to 500 g · done by 4:30',
+  debugging: [
+    { symptom: 'Bitter, drying', first: 'Coarsen', then: 'Drop temp 2 °C; fewer pulses' },
+    { symptom: 'Sour, thin', first: 'Finer', then: 'Raise temp; more pulses' },
+    { symptom: 'Stalls', first: 'Coarsen', then: 'Check the vent channel is clear' },
+    { symptom: 'Papery', first: 'Rinse the filter longer', then: 'Use hotter rinse water' },
+    { symptom: 'Clean but hollow', first: 'Raise dose', then: 'This is the filter — Chemex trades body for clarity' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── Kalita Wave ──────────────────────────────────────────────────────────────
+
+const kalita: BrewingGuide = {
+  method: 'kalita',
+  title: 'The Kalita Wave, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'A flat bed and three small holes.',
+      blocks: [
+        { kind: 'para', text: 'Configure → Dose → Water → Bloom → Pulse pours → Drawdown.' },
+        { kind: 'note', text: PERCOLATION_NOTE },
+        {
+          kind: 'para',
+          text: 'The flat bottom and three restricted holes make this **the forgiving pourover.** The bed depth is even, so water cannot find a short path through the middle, and the holes meter flow so your pour rate matters less. The trade: you cannot speed it up by pouring faster — it will just pool.',
+        },
+      ],
+    },
+    {
+      id: 'configure',
+      step: '1',
+      title: 'Configure',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Rinse and seat the wave filter** — the ribs should not collapse against the wall.',
+            '**Metal vs ceramic vs glass** — metal drains fastest and loses heat fastest.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '2',
+      title: 'Dose & grind',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '20 g' },
+            { label: 'Typical ratio', value: '1:16' },
+            { label: 'Grind', value: 'Medium' },
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'brew',
+      step: '3',
+      title: 'Water, bloom & pulses',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical temp', value: '92–94 °C' },
+            { label: 'Bloom', value: '2× dose, 30 s' },
+            { label: 'Pulses', value: '4–5, each ~60 g' },
+            { label: 'Total time', value: '2:45–3:30' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Pulse to keep the water level roughly constant rather than letting the bed drain dry between pours. A bed that goes dry and re-floods extracts unevenly.',
+        },
+      ],
+    },
+  ],
+  starter: '20 g · 320 g at 93 °C · medium · rinse filter · bloom 40 g / 30 s · 4 pulses of 70 g · done by 3:00',
+  debugging: [
+    { symptom: 'Bitter, drying', first: 'Coarsen', then: 'Fewer pulses; drop temp 2 °C' },
+    { symptom: 'Sour, thin', first: 'Finer', then: 'More pulses; raise temp 2 °C' },
+    { symptom: 'Pools and stalls', first: 'Coarsen', then: 'Smaller pulses; check the filter is seated' },
+    { symptom: 'Flat, no clarity', first: 'Raise temp', then: 'Fresher coffee — the Wave hides little' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── French Press ─────────────────────────────────────────────────────────────
+
+const frenchpress: BrewingGuide = {
+  method: 'frenchpress',
+  title: 'The French Press, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'The fewest decisions of any method here.',
+      blocks: [
+        { kind: 'para', text: 'Configure → Dose → Water → Steep → Break the crust → Plunge.' },
+        {
+          kind: 'note',
+          text: 'Full immersion with **no pressure and a metal filter.** The plunger is a strainer, not a press — pushing hard just forces fines through the mesh and stirs the bed you spent four minutes settling. Contact time is the whole recipe.',
+        },
+        {
+          kind: 'para',
+          text: 'Because the mesh passes oils and fines, this is the **body** method. Everything the AeroPress paper filter removes, the French press keeps.',
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '1',
+      title: 'Dose & grind',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '30 g' },
+            { label: 'Typical ratio', value: '1:15–1:17' },
+            { label: 'Grind', value: 'Coarse' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Grind coarse for a mechanical reason, not a flavour one: fines pass the mesh and keep extracting in the cup. A French press brewed fine does not just taste bitter — it tastes bitter **and gets worse as you drink it.**',
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'steep',
+      step: '2',
+      title: 'Steep',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical temp', value: '93–96 °C' },
+            { label: 'Steep time', value: '4:00' },
+            { label: 'Range', value: '1:00–15:00' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Four minutes is convention, not physics. Long steeps (8–15 min) at lower temperature are a real and under-explored corner — extraction slows sharply once the bed saturates, so the curve is flatter than the clock suggests.',
+        },
+      ],
+    },
+    {
+      id: 'finish',
+      step: '3',
+      title: 'Break the crust, skim, plunge',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Break the crust** at ~4:00 — stir the floating cap so the grounds sink.',
+            '**Skim** the foam and floaters — this is where most of the bitterness and chaff sit.',
+            '**Wait** 5 minutes after breaking, if you have the patience: the fines settle and the mesh has less to do.',
+            '**Plunge gently**, and stop at the surface of the bed.',
+            '**Decant immediately** — coffee left on the grounds keeps extracting.',
+          ],
+        },
+        {
+          kind: 'note',
+          text: 'Skim-and-wait is effectively the Hoffmann method. It trades four minutes of waiting for most of the clarity a paper filter would give you.',
+        },
+      ],
+    },
+  ],
+  starter: '30 g · 500 g at 94 °C · coarse · steep 4:00 · break crust, skim · wait 5:00 · plunge gently · decant at once',
+  debugging: [
+    { symptom: 'Bitter, harsh', first: 'Shorten the steep', then: 'Coarsen; drop temp; skim more' },
+    { symptom: 'Sour, thin', first: 'Lengthen the steep', then: 'Finer; raise temp' },
+    { symptom: 'Silty, gritty', first: 'Coarsen', then: 'Wait longer before plunging; leave the last cup' },
+    { symptom: 'Gets worse in the cup', first: 'Decant immediately', then: 'Coarsen — fines are still extracting' },
+    { symptom: 'Muddy, dull', first: 'Skim the crust', then: 'Coarsen; check grinder for fines' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── Espresso ─────────────────────────────────────────────────────────────────
+
+const espresso: BrewingGuide = {
+  method: 'espresso',
+  title: 'Espresso, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a shot',
+      tagline: 'Three numbers, and they are not independent.',
+      blocks: [
+        { kind: 'para', text: 'Prep → Dose → Distribute & tamp → Extract → Read the shot.' },
+        {
+          kind: 'note',
+          text: '**Dose in, yield out, time.** Fix dose and yield, and *time is your read on the grind* — it is a measurement, not a setting. You cannot dial time directly; you dial grind and observe time. This is the single most common misunderstanding in espresso.',
+        },
+        {
+          kind: 'para',
+          text: 'Nine bars through a compacted bed makes this the least forgiving method here. The bed either resists evenly or it channels, and a channelled shot is sour and bitter at once — a signature you will not see in any other brewer.',
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '1',
+      title: 'Dose, distribute, tamp',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '18 g (basket-dependent)' },
+            { label: 'Grind', value: 'Fine' },
+          ],
+        },
+        {
+          kind: 'bullets',
+          items: [
+            '**Match the basket** — a stated 18 g basket wants roughly 18 g. ±2 g changes headspace and resistance.',
+            '**Distribute** (WDT / needle) — this prevents channelling. It matters more than tamp pressure.',
+            '**Tamp level** — level beats hard. An angled tamp is a channel.',
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'extract',
+      step: '2',
+      title: 'Extract',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Ratio', value: '1:2 (classic) · 1:1 ristretto · 1:3 lungo' },
+            { label: 'Typical yield', value: '36 g from 18 g' },
+            { label: 'Time', value: '25–32 s — observed' },
+            { label: 'Temp', value: '90–96 °C' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Ratio is the real dial and the only one you set directly. Tighter (1:1) is denser and more acidic; longer (1:3) is more extracted and thinner. Light roasts generally want longer ratios and hotter water than dark.',
+        },
+      ],
+    },
+    {
+      id: 'read',
+      step: '3',
+      title: 'Read the shot',
+      optional: true,
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Even, slow, honey-like start** → the bed held.',
+            '**Fast blonde streaks / spraying** → channelling. Fix distribution before touching grind.',
+            '**Gushes** → too coarse, or underdosed.',
+            '**Drips, then nothing** → too fine, or overdosed.',
+          ],
+        },
+      ],
+    },
+  ],
+  starter: '18 g in · 36 g out · 27 s · 93 °C · WDT + level tamp — then adjust grind until time lands',
+  debugging: [
+    { symptom: 'Sour and fast', first: 'Grind finer', then: 'Raise temp; longer ratio' },
+    { symptom: 'Bitter and slow', first: 'Grind coarser', then: 'Drop temp; shorter ratio' },
+    { symptom: 'Sour AND bitter', first: 'Channelling — improve distribution (WDT)', then: 'Check tamp is level; check basket dose' },
+    { symptom: 'Thin, no body', first: 'Shorten the ratio', then: 'Check coffee freshness (needs 7–21 days off roast)' },
+    { symptom: 'Harsh, ashy', first: 'Drop temp 2 °C', then: 'Shorten the ratio; the tail is the bitter part' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── Moka pot ─────────────────────────────────────────────────────────────────
+
+const moka: BrewingGuide = {
+  method: 'moka',
+  title: 'The Moka Pot, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'You control heat, and almost nothing else.',
+      blocks: [
+        { kind: 'para', text: 'Fill → Dose → Heat → Watch the stream → Cut the heat.' },
+        {
+          kind: 'note',
+          text: 'Steam pressure (~1–2 bar) pushes water up through the bed. **Dose is fixed by the basket, water by the valve, ratio by the pot you own.** The one real lever is the heat curve — and the one real mistake is letting it run to the end.',
+        },
+      ],
+    },
+    {
+      id: 'setup',
+      step: '1',
+      title: 'Fill & dose',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            '**Preheat the water** — fill to just below the valve with water already near boiling. Cold water sits on the flame and cooks the grounds through the metal before brewing starts. This is the biggest single improvement available.',
+            '**Fill the basket level, do not tamp** — moka pressure cannot push through a tamped bed.',
+            '**Grind medium-fine** — between V60 and espresso.',
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+    {
+      id: 'heat',
+      step: '2',
+      title: 'Heat',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Flame', value: 'Low-to-medium' },
+            { label: 'Lid', value: 'Open, so you can see the stream' },
+          ],
+        },
+        {
+          kind: 'para',
+          text: 'Aim for a slow, steady, honey-coloured stream. A violent sputtering jet means too much heat and a bitter cup.',
+        },
+      ],
+    },
+    {
+      id: 'stop',
+      step: '3',
+      title: 'Cut the heat',
+      blocks: [
+        {
+          kind: 'para',
+          text: 'Pull it off **at the first gurgle**, when the stream goes pale and blonde. That sound is steam breaking through the exhausted bed, and everything after it is the bitter tail. Running the base under cold water stops it immediately.',
+        },
+      ],
+    },
+  ],
+  starter: 'Preheated water to the valve · basket level, untamped · medium-fine · low flame, lid open · pull at the first gurgle',
+  debugging: [
+    { symptom: 'Bitter, burnt', first: 'Lower the flame', then: 'Preheat the water; pull earlier' },
+    { symptom: 'Sour, weak', first: 'Grind finer', then: 'Slightly more heat' },
+    { symptom: 'Sputters and sprays', first: 'Lower the flame', then: 'Preheat the water' },
+    { symptom: 'Barely comes through', first: 'Coarsen', then: "Don't tamp; check the gasket and valve" },
+    { symptom: 'Metallic', first: 'Clean the pot (no soap on aluminium)', then: 'Check the gasket age' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
+// ── Hario Switch ─────────────────────────────────────────────────────────────
+
+const harioSwitch: BrewingGuide = {
+  method: 'switch',
+  title: 'The Hario Switch, Step by Step',
+  subtitle: 'PLACEHOLDER — conventional practice, not yet dataset-backed.',
+  sections: [
+    {
+      id: 'overview',
+      step: '0',
+      title: 'The shape of a brew',
+      tagline: 'One valve, two brewers.',
+      blocks: [
+        { kind: 'para', text: 'Configure → Dose → Water → Choose a valve schedule → Drain.' },
+        {
+          kind: 'note',
+          text: 'A V60 cone with a **stopper valve.** Closed, it is an immersion brewer with full control of contact time. Open, it is a V60. The recipe is the schedule of when it is which — and that schedule is the only parameter no other method here has.',
+        },
+        {
+          kind: 'para',
+          text: 'This makes the Switch the bridge between the two halves of your library: it can imitate a French press (closed throughout, then drain) or a V60 (open throughout), or sit anywhere between.',
+        },
+      ],
+    },
+    {
+      id: 'schedule',
+      step: '1',
+      title: 'The valve schedule',
+      blocks: [
+        {
+          kind: 'table',
+          headers: ['Schedule', 'Behaves like', 'Use'],
+          rows: [
+            ['Closed → open at the end', 'French press with a paper filter', 'Body with clarity; forgiving'],
+            ['Open throughout', 'V60', 'Clean, bright, fast'],
+            ['Closed, open, closed', 'Hybrid ("bloom-steep-drain")', 'Even extraction on light roasts'],
+            ['Open bloom → closed steep → open', 'Hybrid', 'De-gas first, then steep evenly'],
+          ],
+        },
+        {
+          kind: 'note',
+          text: 'A closed phase is contact time you set exactly. An open phase is contact time the bed decides. Mixing them is the whole point.',
+        },
+      ],
+    },
+    {
+      id: 'dose',
+      step: '2',
+      title: 'Dose, grind & water',
+      blocks: [
+        {
+          kind: 'facts',
+          items: [
+            { label: 'Typical dose', value: '20 g' },
+            { label: 'Typical ratio', value: '1:15–1:16' },
+            { label: 'Grind', value: 'Medium — coarser the longer the closed phase' },
+            { label: 'Typical temp', value: '92–96 °C' },
+            { label: 'Total time', value: '2:30–3:30' },
+          ],
+        },
+        { kind: 'note', text: GRIND_NOTE },
+      ],
+    },
+  ],
+  starter:
+    '20 g · 300 g at 94 °C · medium · rinse filter · closed: bloom 50 g / 30 s · fill to 300 g · steep to 1:45 · open · drain by 3:00',
+  debugging: [
+    { symptom: 'Bitter, drying', first: 'Shorten the closed phase', then: 'Coarsen; drop temp 2 °C' },
+    { symptom: 'Sour, thin', first: 'Lengthen the closed phase', then: 'Finer; raise temp 2 °C' },
+    { symptom: 'Slow, stalls on open', first: 'Coarsen', then: 'Less agitation during the steep' },
+    { symptom: 'Muddy', first: 'Do not stir before opening the valve', then: 'Coarsen — let the bed settle first' },
+  ],
+  source: 'Placeholder. Conventional ranges, no dataset behind them yet.',
+};
+
 const GUIDES: Partial<Record<BrewMethod, BrewingGuide>> = {
   aeropress,
+  v60,
+  chemex,
+  kalita,
+  frenchpress,
+  espresso,
+  moka,
+  switch: harioSwitch,
 };
 
 /** All guides that exist, for listing (e.g. the Gear tab). */
