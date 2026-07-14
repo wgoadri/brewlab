@@ -91,7 +91,12 @@ export const METHODS: Record<BrewMethod, MethodDef> = {
     label: 'AeroPress',
     timerMode: 'guided',
     params: [
-      dose(15), water(240), grind, temp(85), totalTime(120),
+      dose(15),
+      // `waterG` is BREW water (touches coffee); bypass is added after and never
+      // does. Total cup = waterG + bypassWaterG. See docs/aeropress_brewing_guide.md.
+      { ...water(240), label: 'Brew water', help: 'Water that touches the coffee. Add dilution below as bypass.' },
+      { key: 'bypassWaterG', label: 'Bypass water', type: 'number', unit: 'g', min: 0, max: 250, step: 1, default: 0, optimizable: true, help: 'Dilution water added after brewing — never touches the coffee. 0 = full brew.' },
+      grind, temp(85), totalTime(120),
       { key: 'orientation', label: 'Orientation', type: 'enum', options: ['standard', 'inverted'], default: 'inverted', optimizable: true },
       { key: 'steepTimeS', label: 'Steep time', type: 'int', unit: 's', min: 0, max: 600, step: 5, default: 90, optimizable: true },
       { key: 'plungeTimeS', label: 'Plunge time', type: 'int', unit: 's', min: 5, max: 120, step: 1, default: 30, optimizable: true },

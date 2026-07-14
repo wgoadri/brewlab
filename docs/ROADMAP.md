@@ -27,7 +27,7 @@ Verified, not eyeballed:
 |---|-----|----------|--------|
 | G1 | `PerturbBest` perturbs only numeric dims; `orientation`/`agitation`/`heatLevel` are `optimizable` enums but stay frozen at the best brew's value | `lib/optimizer/index.ts:61` | Categorical knobs never explored |
 | ~~G2~~ | ~~`{paramKey}` placeholders resolve only at timer runtime; unknown keys pass through silently~~ **CLOSED by Track B** | RecipeForm / recipeSteps | — |
-| G3 | AeroPress params can't represent **bypass / dilution / total water** — central to modern comp brewing and pervasive in the WAC data | `lib/methods.ts:93` | Can't log or optimize the knob champions tune most |
+| ~~G3~~ | ~~AeroPress params can't represent **bypass / dilution**~~ **CLOSED by A1** — `bypassWaterG` param added | `lib/methods.ts` | — |
 
 ---
 
@@ -48,14 +48,12 @@ least urgent while the dataset is small.
 
 ### Track A — Recipes & the WAC data
 
-- **A1 · Add `bypassWaterG` AeroPress param** *(closes G3)*
-  - Add to `METHODS.aeropress.params` in `lib/methods.ts`: `key: 'bypassWaterG'`,
-    `type: 'number'`, `unit: 'g'`, `min: 0`, `max: 250`, `default: 0`,
-    `optimizable: true`. No `column` → lands in `paramsJson`.
-  - No schema migration needed (paramsJson is untyped) — but confirm
-    `db:generate` still reports no changes.
-  - Accept: param renders in `BrewForm`, is stored in `brews.paramsJson`, and
-    appears in the Analysis Parameter Explorer picker.
+- **A1 · Add `bypassWaterG` AeroPress param** ✅ DONE *(closes G3)*
+  - Added to `METHODS.aeropress.params`: `bypassWaterG` (number, g, 0–250,
+    default 0, optimizable) → lands in `paramsJson`. `db:generate` confirms no
+    migration. Also relabelled AeroPress `waterG` → "Brew water" for clarity.
+  - **Decision (open Q2 resolved):** `waterG` = **brew water only**; total cup =
+    `waterG + bypassWaterG`; extraction ratio = `waterG / doseG`.
 
 - **A2 · Seed ~5 recent champion recipes**
   - Insert as `recipes` rows, `method: 'aeropress'`, using `{doseG}`/`{waterTempC}`/
@@ -118,6 +116,5 @@ intentional prose). Revisit if either becomes annoying in use.
 ## Open questions
 1. **A2 seeding**: bundle as idempotent startup seed, or an explicit user-triggered
    import? (Affects whether champion recipes clutter a brand-new install.)
-2. **A1 bypass semantics**: is `waterG` the brew water only (bypass added on top,
-   so cup ≈ waterG + bypassWaterG), or the total? Nail down before A2 writes
-   instructions that reference both.
+2. ~~**A1 bypass semantics**~~ **RESOLVED**: `waterG` = brew water only; total cup =
+   `waterG + bypassWaterG`.
